@@ -161,6 +161,17 @@ void *Com_LoadLibrary( const char *dllname, int build_ordinals_table )
 		pHandle = dlopen( path, RTLD_NOW );
 		if( pHandle ) return pHandle;
 
+		if( !Q_strcmp( name_buf, "menu" ) )
+		{
+			pHandle = dlopen( "libxashmenu.so", RTLD_NOW );
+			if( pHandle ) return pHandle;
+		}
+		if( !Q_strcmp( name_buf, "xashmenu" ) )
+		{
+			pHandle = dlopen( "libmenu.so", RTLD_NOW );
+			if( pHandle ) return pHandle;
+		}
+
 		Com_PushLibraryError( dlerror() );
 	}
 #elif defined __SAILFISH__

@@ -81,7 +81,7 @@ int CaseInsensitiveHash(const char *string, int iBounds)
 {
 	unsigned int hash = 0;
 
-	if (!*string)
+	if (!string || !*string || iBounds <= 0)
 		return 0;
 
 	while (*string)
@@ -97,10 +97,32 @@ int CaseInsensitiveHash(const char *string, int iBounds)
 	return (hash % iBounds);
 }
 
+void InitEntityHashTable()
+{
+	if (stringsHashTable.Count() == 0)
+	{
+		stringsHashTable.AddMultipleToTail(2048);
+		for (int i = 0; i < stringsHashTable.Count(); ++i)
+		{
+			stringsHashTable[i].next = NULL;
+		}
+	}
+	EmptyEntityHashTable();
+}
+
 void EmptyEntityHashTable()
 {
 	int i;
 	hash_item_t *item, *temp, *free;
+
+	if (stringsHashTable.Count() == 0)
+	{
+		stringsHashTable.AddMultipleToTail(2048);
+		for (i = 0; i < stringsHashTable.Count(); ++i)
+		{
+			stringsHashTable[i].next = NULL;
+		}
+	}
 
 	for (i = 0; i < stringsHashTable.Count(); ++i)
 	{
@@ -131,10 +153,19 @@ void AddEntityHashValue(entvars_t *pev, const char *value, hash_types_e fieldTyp
 	if (fieldType != CLASSNAME)
 		return;
 
-	if (FStringNull(pev->classname))
+	if (!pev || FStringNull(pev->classname))
 		return;
 
+	if (!value)
+		return;
+
+	if (stringsHashTable.Count() == 0)
+		InitEntityHashTable();
+
 	count = stringsHashTable.Count();
+	if (count <= 0)
+		return;
+
 	hash = CaseInsensitiveHash(value, count);
 	pevIndex = ENTINDEX(ENT(pev));
 	item = &stringsHashTable[hash];
@@ -202,12 +233,21 @@ void RemoveEntityHashValue(entvars_t *pev, const char *value, hash_types_e field
 	int pevIndex;
 	int count;
 
-	count = stringsHashTable.Count();
-	hash = CaseInsensitiveHash(value, count);
-	pevIndex = ENTINDEX(ENT(pev));
-
 	if (fieldType != CLASSNAME)
 		return;
+
+	if (!pev || !value)
+		return;
+
+	if (stringsHashTable.Count() == 0)
+		return;
+
+	count = stringsHashTable.Count();
+	if (count <= 0)
+		return;
+
+	hash = CaseInsensitiveHash(value, count);
+	pevIndex = ENTINDEX(ENT(pev));
 
 	hash = hash % count;
 	item = &stringsHashTable[hash];
@@ -368,13 +408,7 @@ C_DLLEXPORT int GetEntityAPI(DLL_FUNCTIONS *pFunctionTable, int interfaceVersion
 		return 0;
 
 	Q_memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
-	stringsHashTable.AddMultipleToTail(2048);
-	for (int i = 0; i < stringsHashTable.Count(); ++i)
-	{
-		stringsHashTable[i].next = NULL;
-	}
-
-	EmptyEntityHashTable();
+	InitEntityHashTable();
 	return 1;
 }
 
@@ -387,6 +421,7 @@ NOXREF int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion)
 	}
 
 	Q_memcpy(pFunctionTable, &gFunctionTable, sizeof(DLL_FUNCTIONS));
+	InitEntityHashTable();
 	return 1;
 }
 

@@ -13,18 +13,20 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import java.lang.reflect.Method;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,15 +40,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.Method;
 
 public class LauncherActivity extends Activity 
 {
 	public static final String TAG = "LauncherActivity";
 	public static final int PAK_VERSION = 5;
 	private static final int REQUEST_STORAGE_PERMISSION = 1001;
+	private static final int REQUEST_FOLDER_PICK = 1002;
 
 	public static SharedPreferences mPref;
 
@@ -59,12 +60,24 @@ public class LauncherActivity extends Activity
 	private CheckBox checkBoxZBot;
 	private CheckBox checkBoxYaPB;
 	private CheckBox checkBoxImmersive;
+	private CheckBox checkBoxResize;
 	private EditText editTextCmdArgs;
 	private TextView toggleAdvanced;
 	private LinearLayout layoutAdvanced;
 	private CheckBox checkBoxVolume;
-	private CheckBox checkBoxResize;
 	private Spinner spinnerPixelFormat;
+
+	// Resolution settings
+	private CheckBox checkBoxResolution;
+	private RadioGroup scaleGroup;
+	private RadioButton radioScale;
+	private RadioButton radioCustom;
+	private EditText resWidth;
+	private EditText resHeight;
+	private EditText resScale;
+	private TextView resResult;
+	private int mEngineWidth;
+	private int mEngineHeight;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
@@ -91,12 +104,22 @@ public class LauncherActivity extends Activity
 		checkBoxZBot = findViewById(R.id.use_zbot);
 		checkBoxYaPB = findViewById(R.id.use_yapb);
 		checkBoxImmersive = findViewById(R.id.immersive_mode);
+		checkBoxResize = findViewById(R.id.enableResizeWorkaround);
 		editTextCmdArgs = findViewById(R.id.cmdArgs);
 		toggleAdvanced = findViewById(R.id.toggle_advanced);
 		layoutAdvanced = findViewById(R.id.layout_advanced_options);
 		checkBoxVolume = findViewById(R.id.useVolume);
-		checkBoxResize = findViewById(R.id.enableResizeWorkaround);
 		spinnerPixelFormat = findViewById(R.id.pixelSpinner);
+
+		// Resolution elements
+		checkBoxResolution = findViewById(R.id.resolution);
+		scaleGroup = findViewById(R.id.scale_group);
+		radioScale = findViewById(R.id.resolution_scale_r);
+		radioCustom = findViewById(R.id.resolution_custom_r);
+		resWidth = findViewById(R.id.resolution_width);
+		resHeight = findViewById(R.id.resolution_height);
+		resScale = findViewById(R.id.resolution_scale);
+		resResult = findViewById(R.id.resolution_result);
 
 		// Initialize values from preferences
 		String defaultPath = FWGSLib.getDefaultXashPath(this);
@@ -106,10 +129,10 @@ public class LauncherActivity extends Activity
 		checkBoxZBot.setChecked(mPref.getBoolean("zbots", true));
 		checkBoxYaPB.setChecked(mPref.getBoolean("yapbs", false));
 		checkBoxImmersive.setChecked(mPref.getBoolean("immersive_mode", true));
+		checkBoxResize.setChecked(mPref.getBoolean("enableResizeWorkaround", true));
 		editTextCmdArgs.setText(mPref.getString("argv", "-console"));
 
 		checkBoxVolume.setChecked(mPref.getBoolean("usevolume", true));
-		checkBoxResize.setChecked(mPref.getBoolean("enableResizeWorkaround", true));
 
 		final String[] pixelFormats = {
 			"32 bit (RGBA8888)",
@@ -122,6 +145,67 @@ public class LauncherActivity extends Activity
 		ArrayAdapter<String> pixelAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, pixelFormats);
 		spinnerPixelFormat.setAdapter(pixelAdapter);
 		spinnerPixelFormat.setSelection(mPref.getInt("pixelformat", 0));
+
+		// Compute screen dimensions
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		if (FWGSLib.isLandscapeOrientation(this)) 
+		{
+			mEngineWidth = metrics.widthPixels;
+			mEngineHeight = metrics.heightPixels;
+		} 
+		else 
+		{
+			mEngineWidth = metrics.heightPixels;
+			mEngineHeight = metrics.widthPixels;
+		}
+
+		resWidth.setText(String.valueOf(mPref.getInt("resolution_width", mEngineWidth > 0 ? mEngineWidth : 854)));
+		resHeight.setText(String.valueOf(mPref.getInt("resolution_height", mEngineHeight > 0 ? mEngineHeight : 480)));
+		resScale.setText(String.valueOf(mPref.getFloat("resolution_scale", 2.0f)));
+
+		TextWatcher resTextChangeWatcher = new TextWatcher() 
+		{
+			@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+			@Override public void onTextChanged(CharSequence s, int start, int before, int count) { updateResolutionResult(); }
+			@Override public void afterTextChanged(Editable s) {}
+		};
+		resWidth.addTextChangedListener(resTextChangeWatcher);
+		resHeight.addTextChangedListener(resTextChangeWatcher);
+		resScale.addTextChangedListener(resTextChangeWatcher);
+
+		if (mPref.getBoolean("resolution_custom", false)) 
+		{
+			radioCustom.setChecked(true);
+		} 
+		else 
+		{
+			radioScale.setChecked(true);
+		}
+
+		radioCustom.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() 
+		{
+			@Override
+			public void onCheckedChanged(CompoundButton v, boolean isChecked) 
+			{
+				updateResolutionResult();
+				toggleResolutionFields();
+			}
+		});
+
+		checkBoxResolution.setChecked(mPref.getBoolean("resolution_fixed", false));
+		checkBoxResolution.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() 
+		{
+			@Override
+			public void onCheckedChanged(CompoundButton v, boolean isChecked) 
+			{
+				scaleGroup.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+			}
+		});
+
+		scaleGroup.setVisibility(checkBoxResolution.isChecked() ? View.VISIBLE : View.GONE);
+		toggleResolutionFields();
+		updateResolutionResult();
 
 		// Advanced options toggle
 		toggleAdvanced.setOnClickListener(new View.OnClickListener() 
@@ -142,7 +226,7 @@ public class LauncherActivity extends Activity
 			}
 		});
 
-		// Folder selection button
+		// Folder selection button - launches full-screen ZArchiver-style browser
 		buttonSelectFolder.setOnClickListener(new View.OnClickListener() 
 		{
 			@Override
@@ -216,6 +300,70 @@ public class LauncherActivity extends Activity
 		}
 	}
 
+	private void updateResolutionResult() 
+	{
+		if (resResult == null || radioCustom == null) return;
+		int w, h;
+		if (radioCustom.isChecked()) 
+		{
+			w = getCustomEngineWidth();
+			h = getCustomEngineHeight();
+		} 
+		else 
+		{
+			float scale = getResolutionScale();
+			if (scale <= 0.1f) scale = 1.0f;
+			w = (int) ((float) mEngineWidth / scale);
+			h = (int) ((float) mEngineHeight / scale);
+		}
+		resResult.setText(getString(R.string.resolution_result) + w + "x" + h);
+	}
+
+	private void toggleResolutionFields() 
+	{
+		if (radioCustom == null) return;
+		boolean isCustom = radioCustom.isChecked();
+		resWidth.setEnabled(isCustom);
+		resHeight.setEnabled(isCustom);
+		resScale.setEnabled(!isCustom);
+	}
+
+	private float getResolutionScale() 
+	{
+		try 
+		{
+			return Float.parseFloat(resScale.getText().toString());
+		} 
+		catch (Exception e) 
+		{
+			return 2.0f;
+		}
+	}
+
+	private int getCustomEngineWidth() 
+	{
+		try 
+		{
+			return Integer.parseInt(resWidth.getText().toString());
+		} 
+		catch (Exception e) 
+		{
+			return mEngineWidth > 0 ? mEngineWidth : 854;
+		}
+	}
+
+	private int getCustomEngineHeight() 
+	{
+		try 
+		{
+			return Integer.parseInt(resHeight.getText().toString());
+		} 
+		catch (Exception e) 
+		{
+			return mEngineHeight > 0 ? mEngineHeight : 480;
+		}
+	}
+
 	private boolean hasStoragePermission() 
 	{
 		if (Build.VERSION.SDK_INT >= 30) // Android 11+
@@ -258,10 +406,7 @@ public class LauncherActivity extends Activity
 					startActivityForResult(intent, REQUEST_STORAGE_PERMISSION);
 					return;
 				} 
-				catch (Exception ex) 
-				{
-					// fallback to runtime permission below
-				}
+				catch (Exception ignored) {}
 			}
 		}
 
@@ -276,13 +421,15 @@ public class LauncherActivity extends Activity
 
 	private void checkAndShowPermissionWarning() 
 	{
-		if (!hasStoragePermission()) 
+		if (cardPermissionWarning == null) return;
+
+		if (hasStoragePermission()) 
 		{
-			cardPermissionWarning.setVisibility(View.VISIBLE);
+			cardPermissionWarning.setVisibility(View.GONE);
 		} 
 		else 
 		{
-			cardPermissionWarning.setVisibility(View.GONE);
+			cardPermissionWarning.setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -292,18 +439,10 @@ public class LauncherActivity extends Activity
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		if (requestCode == REQUEST_STORAGE_PERMISSION) 
 		{
-			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) 
+			checkAndShowPermissionWarning();
+			if (editTextPath != null) 
 			{
-				cardPermissionWarning.setVisibility(View.GONE);
-				Toast.makeText(this, "Storage permission granted!", Toast.LENGTH_SHORT).show();
-				if (editTextPath != null) 
-				{
-					updatePathStatus(editTextPath.getText().toString().trim());
-				}
-			} 
-			else 
-			{
-				Toast.makeText(this, "Permission denied. Game resources might not load.", Toast.LENGTH_LONG).show();
+				updatePathStatus(editTextPath.getText().toString().trim());
 			}
 		}
 	}
@@ -319,189 +458,69 @@ public class LauncherActivity extends Activity
 			{
 				updatePathStatus(editTextPath.getText().toString().trim());
 			}
+		} 
+		else if (requestCode == REQUEST_FOLDER_PICK && resultCode == RESULT_OK && data != null) 
+		{
+			String path = data.getStringExtra("path");
+			if (path != null && !path.trim().isEmpty()) 
+			{
+				editTextPath.setText(path.trim());
+				updatePathStatus(path.trim());
+				mPref.edit().putString("basedir", path.trim()).apply();
+				Toast.makeText(this, "Selected: " + path.trim(), Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 
 	private void updatePathStatus(String path) 
 	{
+		if (textViewPathStatus == null) return;
+
 		if (path == null || path.isEmpty()) 
 		{
-			textViewPathStatus.setText("⚠ No path specified");
-			textViewPathStatus.setTextColor(0xffff8800);
+			textViewPathStatus.setText("⚠ Please set a game directory");
+			textViewPathStatus.setTextColor(0xFFFFAA00);
 			return;
 		}
 
 		File dir = new File(path);
 		if (!dir.exists()) 
 		{
-			textViewPathStatus.setText("⚠ Directory does not exist (will be created)");
-			textViewPathStatus.setTextColor(0xffffaa00);
+			textViewPathStatus.setText("⚠ Directory does not exist");
+			textViewPathStatus.setTextColor(0xFFFF5555);
 			return;
 		}
 
 		File cstrike = new File(dir, "cstrike");
 		File valve = new File(dir, "valve");
 
-		if (cstrike.exists() && valve.exists()) 
+		if (cstrike.isDirectory() && valve.isDirectory()) 
 		{
-			textViewPathStatus.setText("✓ cstrike & valve folders found!");
-			textViewPathStatus.setTextColor(0xff55ff55);
+			textViewPathStatus.setText("✓ cstrike and valve folders found!");
+			textViewPathStatus.setTextColor(0xFF55FF55);
 		} 
-		else if (cstrike.exists()) 
+		else if (cstrike.isDirectory()) 
 		{
-			textViewPathStatus.setText("✓ cstrike folder found!");
-			textViewPathStatus.setTextColor(0xff55ff55);
+			textViewPathStatus.setText("✓ cstrike folder found");
+			textViewPathStatus.setTextColor(0xFF77FF77);
 		} 
-		else if (valve.exists()) 
+		else if (valve.isDirectory()) 
 		{
-			textViewPathStatus.setText("⚠ valve found, but cstrike folder is missing!");
-			textViewPathStatus.setTextColor(0xffffaa00);
+			textViewPathStatus.setText("✓ valve folder found");
+			textViewPathStatus.setTextColor(0xFF77FF77);
 		} 
 		else 
 		{
-			textViewPathStatus.setText("⚠ Neither cstrike nor valve found in this folder");
-			textViewPathStatus.setTextColor(0xffff8800);
+			textViewPathStatus.setText("⚠ Neither cstrike nor valve found here");
+			textViewPathStatus.setTextColor(0xFFFFAA00);
 		}
 	}
 
-	/**
-	 * Shows an interactive folder chooser dialog to browse and select the CS 1.6 game directory.
-	 */
 	private void showDirectoryChooser() 
 	{
-		String currentPath = editTextPath.getText().toString().trim();
-		File currentDir = new File(currentPath);
-		if (!currentDir.exists() || !currentDir.isDirectory()) 
-		{
-			currentDir = Environment.getExternalStorageDirectory();
-			if (currentDir == null || !currentDir.exists()) 
-			{
-				currentDir = new File("/sdcard");
-			}
-		}
-
-		browseFolderDialog(currentDir);
-	}
-
-	private void browseFolderDialog(final File dir) 
-	{
-		final List<File> subFolders = new ArrayList<>();
-		final List<String> displayNames = new ArrayList<>();
-
-		// Option to go up one directory
-		final boolean hasParent = (dir.getParentFile() != null && dir.getParentFile().canRead());
-		if (hasParent) 
-		{
-			displayNames.add("📁 .. [Parent Directory]");
-			subFolders.add(dir.getParentFile());
-		}
-
-		// List subfolders
-		File[] files = dir.listFiles();
-		if (files != null) 
-		{
-			List<File> dirList = new ArrayList<>();
-			for (File f : files) 
-			{
-				if (f.isDirectory() && !f.getName().startsWith(".")) 
-				{
-					dirList.add(f);
-				}
-			}
-			Collections.sort(dirList, new java.util.Comparator<File>() 
-			{
-				@Override
-				public int compare(File a, File b) 
-				{
-					return a.getName().compareToIgnoreCase(b.getName());
-				}
-			});
-
-			for (File d : dirList) 
-			{
-				boolean hasCS = new File(d, "cstrike").exists();
-				String prefix = hasCS ? "⭐ " : "📁 ";
-				displayNames.add(prefix + d.getName() + (hasCS ? " (CS 1.6)" : ""));
-				subFolders.add(d);
-			}
-		}
-
-		// Check if current directory has cstrike
-		boolean cstrikeHere = new File(dir, "cstrike").exists();
-		String title = dir.getAbsolutePath() + (cstrikeHere ? "\n✓ cstrike found here!" : "");
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setTitle("Select Game Data Folder");
-		builder.setMessage(title);
-
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, displayNames);
-
-		builder.setAdapter(adapter, new DialogInterface.OnClickListener() 
-		{
-			@Override
-			public void onClick(DialogInterface dialog, int which) 
-			{
-				File selected = subFolders.get(which);
-				browseFolderDialog(selected);
-			}
-		});
-
-		builder.setPositiveButton("Set Current Folder", new DialogInterface.OnClickListener() 
-		{
-			@Override
-			public void onClick(DialogInterface dialog, int which) 
-			{
-				String selectedPath = dir.getAbsolutePath();
-				editTextPath.setText(selectedPath);
-				updatePathStatus(selectedPath);
-				mPref.edit().putString("basedir", selectedPath).apply();
-				Toast.makeText(LauncherActivity.this, "Selected: " + selectedPath, Toast.LENGTH_SHORT).show();
-			}
-		});
-
-		builder.setNegativeButton("Cancel", null);
-
-		builder.setNeutralButton("New Folder", new DialogInterface.OnClickListener() 
-		{
-			@Override
-			public void onClick(DialogInterface dialog, int which) 
-			{
-				showCreateFolderDialog(dir);
-			}
-		});
-
-		builder.create().show();
-	}
-
-	private void showCreateFolderDialog(final File parentDir) 
-	{
-		final EditText input = new EditText(this);
-		input.setHint("xash");
-		new AlertDialog.Builder(this)
-			.setTitle("Create Folder in " + parentDir.getName())
-			.setView(input)
-			.setPositiveButton("Create", new DialogInterface.OnClickListener() 
-			{
-				@Override
-				public void onClick(DialogInterface d, int which) 
-				{
-					String name = input.getText().toString().trim();
-					if (!name.isEmpty()) 
-					{
-						File newDir = new File(parentDir, name);
-						if (newDir.mkdirs() || newDir.exists()) 
-						{
-							browseFolderDialog(newDir);
-						} 
-						else 
-						{
-							Toast.makeText(LauncherActivity.this, "Failed to create directory", Toast.LENGTH_SHORT).show();
-						}
-					}
-				}
-			})
-			.setNegativeButton("Cancel", null)
-			.show();
+		Intent intent = new Intent(this, FolderPickerActivity.class);
+		intent.putExtra("initial_path", editTextPath.getText().toString().trim());
+		startActivityForResult(intent, REQUEST_FOLDER_PICK);
 	}
 
 	/**
@@ -516,34 +535,34 @@ public class LauncherActivity extends Activity
 			public void run() 
 			{
 				try 
-			{
-				File pakFile = new File(getFilesDir(), "extras.pak");
-				int currentVersion = mPref.getInt("pakversion", 0);
-
-				if (!pakFile.exists() || currentVersion != PAK_VERSION) 
 				{
-					Log.i(TAG, "Extracting extras.pak from assets...");
-					InputStream is = getAssets().open("extras.pak");
-					OutputStream os = new FileOutputStream(pakFile);
-					byte[] buf = new byte[8192];
-					int len;
-					while ((len = is.read(buf)) > 0) 
-					{
-						os.write(buf, 0, len);
-					}
-					os.flush();
-					os.close();
-					is.close();
+					File pakFile = new File(getFilesDir(), "extras.pak");
+					int currentVersion = mPref.getInt("pakversion", 0);
 
-					mPref.edit().putInt("pakversion", PAK_VERSION).apply();
-					Log.i(TAG, "extras.pak extraction completed.");
+					if (!pakFile.exists() || currentVersion != PAK_VERSION) 
+					{
+						Log.i(TAG, "Extracting extras.pak from assets...");
+						InputStream is = getAssets().open("extras.pak");
+						OutputStream os = new FileOutputStream(pakFile);
+						byte[] buf = new byte[8192];
+						int len;
+						while ((len = is.read(buf)) > 0) 
+						{
+							os.write(buf, 0, len);
+						}
+						os.flush();
+						os.close();
+						is.close();
+
+						mPref.edit().putInt("pakversion", PAK_VERSION).apply();
+						Log.i(TAG, "extras.pak extraction completed.");
+					}
+				} 
+				catch (Exception e) 
+				{
+					Log.w(TAG, "extras.pak not found or extraction skipped: " + e.getMessage());
 				}
-			} 
-			catch (Exception e) 
-			{
-				Log.w(TAG, "extras.pak not found or extraction skipped: " + e.getMessage());
 			}
-		}
 		}).start();
 	}
 
@@ -591,8 +610,13 @@ public class LauncherActivity extends Activity
 		editor.putBoolean("zbots", checkBoxZBot.isChecked());
 		editor.putBoolean("yapbs", checkBoxYaPB.isChecked());
 		editor.putBoolean("immersive_mode", checkBoxImmersive.isChecked());
-		editor.putBoolean("usevolume", checkBoxVolume.isChecked());
 		editor.putBoolean("enableResizeWorkaround", checkBoxResize.isChecked());
+		editor.putBoolean("resolution_fixed", checkBoxResolution.isChecked());
+		editor.putBoolean("resolution_custom", radioCustom.isChecked());
+		editor.putFloat("resolution_scale", getResolutionScale());
+		editor.putInt("resolution_width", getCustomEngineWidth());
+		editor.putInt("resolution_height", getCustomEngineHeight());
+		editor.putBoolean("usevolume", checkBoxVolume.isChecked());
 		editor.putInt("pixelformat", spinnerPixelFormat.getSelectedItemPosition());
 		editor.apply();
 

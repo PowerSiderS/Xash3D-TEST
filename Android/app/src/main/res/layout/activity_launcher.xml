@@ -237,9 +237,145 @@
                     android:text="Fullscreen (Immersive Mode)"
                     android:textColor="#ffffff"
                     android:textSize="14sp" />
+
+                <CheckBox
+                    android:id="@+id/enableResizeWorkaround"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:checked="true"
+                    android:text="Resize workaround (Keyboard does not resize screen)"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- Card 3: Command Line Arguments -->
+            <!-- Card 3: Screen Resolution (Experimental) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.05"
+                    android:text="SCREEN RESOLUTION"
+                    android:textColor="#e5a00d"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <CheckBox
+                    android:id="@+id/resolution"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/resolution"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp" />
+
+                <RadioGroup
+                    android:id="@+id/scale_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:text="@string/resolution_mod_warn"
+                        android:textAppearance="@style/red_small_text" />
+
+                    <TextView
+                        android:id="@+id/resolution_result"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:text="Resolution: Native"
+                        android:textColor="#55ff55"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <RadioButton
+                        android:id="@+id/resolution_scale_r"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/resolution_scale"
+                        android:textColor="#ffffff"
+                        android:textSize="13sp" />
+
+                    <EditText
+                        android:id="@+id/resolution_scale"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/input_bg"
+                        android:hint="2.0"
+                        android:inputType="numberDecimal"
+                        android:padding="8dp"
+                        android:textColor="#ffffff"
+                        android:textSize="14sp" />
+
+                    <RadioButton
+                        android:id="@+id/resolution_custom_r"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/resolution_custom"
+                        android:textColor="#ffffff"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/resolution_width"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/input_bg"
+                            android:gravity="center"
+                            android:hint="854"
+                            android:inputType="number"
+                            android:padding="8dp"
+                            android:textColor="#ffffff"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingLeft="10dp"
+                            android:paddingRight="10dp"
+                            android:text="✕"
+                            android:textColor="#aaaaaa"
+                            android:textSize="16sp" />
+
+                        <EditText
+                            android:id="@+id/resolution_height"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/input_bg"
+                            android:gravity="center"
+                            android:hint="480"
+                            android:inputType="number"
+                            android:padding="8dp"
+                            android:textColor="#ffffff"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- Card 4: Command Line Arguments -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -309,16 +445,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Use volume buttons in game"
-                    android:textColor="#ffffff"
-                    android:textSize="14sp" />
-
-                <CheckBox
-                    android:id="@+id/enableResizeWorkaround"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:checked="true"
-                    android:text="Resize workaround"
                     android:textColor="#ffffff"
                     android:textSize="14sp" />
 

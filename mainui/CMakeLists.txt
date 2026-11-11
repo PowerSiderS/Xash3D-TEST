@@ -198,6 +198,9 @@ if(MAINUI_NAME)
 elseif(WIN32)
 	set_target_properties(${MAINUI_LIBRARY} PROPERTIES
 		OUTPUT_NAME menu PREFIX "")
+elseif(ANDROID)
+	set_target_properties(${MAINUI_LIBRARY} PROPERTIES
+		OUTPUT_NAME menu)
 endif()
 
 if(XASH_64BIT AND NOT ANDROID)

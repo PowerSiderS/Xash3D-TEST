@@ -2428,8 +2428,12 @@ Open a file. The syntax is the same as fopen
 */
 file_t *FS_Open( const char *filepath, const char *mode, qboolean gamedironly )
 {
+	static char fixed_fs_path[MAX_SYSPATH];
 	if( !filepath )
 		return NULL;
+	Q_strncpy( fixed_fs_path, filepath, sizeof( fixed_fs_path ) );
+	COM_FixSlashes( fixed_fs_path );
+	filepath = fixed_fs_path;
 	if( host.type != HOST_UNKNOWN )
 	{
 		// some stupid mappers used leading '/' or '\' in path to models or sounds

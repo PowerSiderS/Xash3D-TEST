@@ -100,8 +100,13 @@ uint32_t GAME_EXPORT Sound_GetApproxWavePlayLen( const char *filepath )
 	size_t	filesize;
 	float	seconds;
 	uint32_t	samples;
+	char	fixedpath[MAX_SYSPATH];
 
-	f = FS_Open( filepath, "rb", false );
+	if( !filepath ) return 0;
+	Q_strncpy( fixedpath, filepath, sizeof( fixedpath ) );
+	COM_FixSlashes( fixedpath );
+
+	f = FS_Open( fixedpath, "rb", false );
 	if( !f ) return 0;
 
 	if( FS_Read( f, &wav, sizeof( wav )) != sizeof( wav ))

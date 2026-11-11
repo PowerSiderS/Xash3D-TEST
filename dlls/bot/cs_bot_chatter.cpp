@@ -456,6 +456,10 @@ bool BotPhraseManager::Initialize(const char *filename, int bankIndex)
 			char *token = MP_COM_GetToken();
 			Q_strncpy(baseDir, token, RadioPathLen);
 			baseDir[RadioPathLen - 1] = '\0';
+			for (char *p = baseDir; *p; p++)
+			{
+				if (*p == '\\') *p = '/';
+			}
 		}
 		else if (!Q_stricmp(token, "Place") || !Q_stricmp(token, "Chatter"))
 		{
@@ -612,17 +616,31 @@ bool BotPhraseManager::Initialize(const char *filename, int bankIndex)
 				if (baseDir[0])
 				{
 					Q_snprintf(compositeFilename, RadioPathLen, "%s%s", baseDir, token);
+					for (char *p = compositeFilename; *p; p++)
+					{
+						if (*p == '\\') *p = '/';
+					}
 					speak->m_phrase = CloneString(compositeFilename);
 				}
 				else
 				{
-					speak->m_phrase = CloneString(token);
+					Q_strncpy(compositeFilename, token, RadioPathLen);
+					compositeFilename[RadioPathLen - 1] = '\0';
+					for (char *p = compositeFilename; *p; p++)
+					{
+						if (*p == '\\') *p = '/';
+					}
+					speak->m_phrase = CloneString(compositeFilename);
 				}
 
 				speak->m_place = placeCriteria;
 				speak->m_count = countCriteria;
 
-				Q_snprintf(compositeFilename, RadioPathLen, "sound\\%s", speak->m_phrase);
+				Q_snprintf(compositeFilename, RadioPathLen, "sound/%s", speak->m_phrase);
+				for (char *p = compositeFilename; *p; p++)
+				{
+					if (*p == '\\') *p = '/';
+				}
 				speak->m_duration = (double)GET_APPROX_WAVE_PLAY_LEN(compositeFilename) / 1000.0f;
 
 				if (speak->m_duration <= 0.0f)

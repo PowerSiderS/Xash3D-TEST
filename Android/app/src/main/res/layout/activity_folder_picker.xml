@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#141618"
+    android:orientation="vertical">
+
+    <!-- Top App Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1e2124"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="12dp"
+        android:paddingTop="10dp"
+        android:paddingRight="12dp"
+        android:paddingBottom="10dp">
+
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/btn_dark"
+            android:text="←"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginLeft="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SELECT GAME DATA DIRECTORY"
+                android:textColor="#e5a00d"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose folder containing 'cstrike' and 'valve'"
+                android:textColor="#888888"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_new_folder"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:background="@drawable/btn_dark"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:text="+ NEW"
+            android:textColor="#ffffff"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Path Bar & Shortcuts -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#22252a"
+        android:orientation="vertical"
+        android:paddingLeft="12dp"
+        android:paddingTop="8dp"
+        android:paddingRight="12dp"
+        android:paddingBottom="8dp">
+
+        <!-- Storage Shortcuts -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_shortcut_internal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/btn_dark"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="📱 Internal Storage"
+                    android:textColor="#dddddd"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btn_shortcut_root"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/btn_dark"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="💾 Root (/)"
+                    android:textColor="#dddddd"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btn_up"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:background="@drawable/btn_dark"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="⬆ Up"
+                    android:textColor="#dddddd"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Current Path Display -->
+        <TextView
+            android:id="@+id/tv_current_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/input_bg"
+            android:ellipsize="start"
+            android:padding="8dp"
+            android:singleLine="true"
+            android:text="/sdcard"
+            android:textColor="#55ff55"
+            android:textSize="13sp"
+            android:typeface="monospace" />
+    </LinearLayout>
+
+    <!-- Folder List -->
+    <ListView
+        android:id="@+id/list_folders"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="#25282d"
+        android:dividerHeight="1dp" />
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="No folders found or access restricted"
+        android:textColor="#777777"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <!-- Bottom Selection Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1e2124"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:paddingLeft="14dp"
+        android:paddingTop="10dp"
+        android:paddingRight="14dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:id="@+id/tv_cs16_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="6dp"
+            android:text="Looking for cstrike &amp; valve..."
+            android:textColor="#aaaaaa"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_select_this_folder"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_gold"
+            android:elevation="4dp"
+            android:letterSpacing="0.05"
+            android:text="✔ SELECT THIS FOLDER"
+            android:textColor="#000000"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>
