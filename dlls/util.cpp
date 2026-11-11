@@ -1717,7 +1717,7 @@ void CSave::WritePositionVector(const char *pname, const float *value, int count
 
 void CSave::WriteFunction(const char *pname, void **data, int count)
 {
-	const char *functionName = NAME_FOR_FUNCTION((uint32)*data);
+	const char *functionName = NAME_FOR_FUNCTION((unsigned long)(uintptr_t)*data);
 
 	if (functionName)
 		BufferField(pname, Q_strlen(functionName) + 1, functionName);
