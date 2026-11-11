@@ -200,13 +200,17 @@ elseif(WIN32)
 		OUTPUT_NAME menu PREFIX "")
 endif()
 
-if(XASH_64BIT)
+if(XASH_64BIT AND NOT ANDROID)
 	get_target_property(MAINUI_NAME ${MAINUI_LIBRARY} OUTPUT_NAME)
 	if(NOT MAINUI_NAME)
 		set(MAINUI_NAME ${MAINUI_LIBRARY})
 	endif()
 	set_target_properties(${MAINUI_LIBRARY} PROPERTIES 
 		OUTPUT_NAME ${MAINUI_NAME}64)
+endif()
+
+if(NOT WIN32)
+	target_link_libraries(${MAINUI_LIBRARY} -lm)
 endif()
 
 fwgs_set_default_properties(${MAINUI_LIBRARY})

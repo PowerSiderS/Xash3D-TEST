@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 cmake_minimum_required(VERSION 3.10)
-project(XASH_ENGINE C)
+project(XASH_ENGINE C CXX)
 
 set(XASH_ENGINE xash) # Lib name
 
@@ -35,7 +35,7 @@ file(GLOB_RECURSE XASH_ENGINE_WIN32_SOURCES   ../game_launch/game.rc platform/wi
 file(GLOB_RECURSE XASH_ENGINE_SDL_SOURCES     platform/sdl/*.c) # SDL version sources
 #file(GLOB_RECURSE XASH_ENGINE_POSIX_SOURCES     platform/posix/*.c) # Posix sources
 file(GLOB_RECURSE XASH_ENGINE_STUB_SOURCES     platform/stub/*.c) # Stub sources
-file(GLOB_RECURSE XASH_ENGINE_ANDROID_SOURCES platform/android/*.c) # Android sources
+file(GLOB_RECURSE XASH_ENGINE_ANDROID_SOURCES platform/android/*.c platform/android/*.cpp) # Android sources
 file(GLOB_RECURSE XASH_ENGINE_CLIENT_SOURCES  client/*.c) # Client sources
 
 if(NOT WIN32 AND NOT APPLE)
@@ -238,7 +238,9 @@ endif()
 
 fwgs_set_default_properties(${XASH_ENGINE})
 
-if(NOT WIN32)
+if(ANDROID)
+	target_link_libraries(${XASH_ENGINE} -lm log)
+elseif(NOT WIN32)
 	if(NOT HAIKU)
 		target_link_libraries(${XASH_ENGINE} -lm -lpthread)
 	else()

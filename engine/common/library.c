@@ -110,25 +110,56 @@ void *Com_LoadLibrary( const char *dllname, int build_ordinals_table )
 	{
 		char path[MAX_SYSPATH];
 		const char *libdir[2];
+		const char *clean_name = dllname;
+		const char *slash;
+		char name_buf[64];
+		char *dot;
 		int i;
+
+		if(( slash = Q_strrchr( clean_name, '/' )) != NULL )
+			clean_name = slash + 1;
+		if(( slash = Q_strrchr( clean_name, '\\' )) != NULL )
+			clean_name = slash + 1;
+
+		if( !Q_strnicmp( clean_name, "lib", 3 ))
+			clean_name += 3;
+
+		Q_strncpy( name_buf, clean_name, sizeof( name_buf ) );
+		dot = Q_strrchr( name_buf, '.' );
+		if( dot && !Q_stricmp( dot, ".so" ) )
+			*dot = '\0';
 
 		libdir[0] = getenv("XASH3D_GAMELIBDIR");
 		libdir[1] = getenv("XASH3D_ENGLIBDIR");
 
 		for( i = 0; i < 2; i++ )
 		{
-			Q_snprintf( path, MAX_SYSPATH, "%s/lib%s"POSTFIX"."OS_LIB_EXT, libdir[i], dllname );
-			pHandle = dlopen( path, RTLD_NOW );
-			if( pHandle )
-				return pHandle;
+			if( !libdir[i] || !*libdir[i] ) continue;
 
-			Com_PushLibraryError( dlerror() );
+			Q_snprintf( path, sizeof( path ), "%s/lib%s.so", libdir[i], name_buf );
+			pHandle = dlopen( path, RTLD_NOW );
+			if( pHandle ) return pHandle;
+
+			if( !Q_strcmp( name_buf, "menu" ) )
+			{
+				Q_snprintf( path, sizeof( path ), "%s/libxashmenu.so", libdir[i] );
+				pHandle = dlopen( path, RTLD_NOW );
+				if( pHandle ) return pHandle;
+			}
+			if( !Q_strcmp( name_buf, "xashmenu" ) )
+			{
+				Q_snprintf( path, sizeof( path ), "%s/libmenu.so", libdir[i] );
+				pHandle = dlopen( path, RTLD_NOW );
+				if( pHandle ) return pHandle;
+			}
 		}
 
-		// HACKHACK: keep old behaviour for compatibility
 		pHandle = dlopen( dllname, RTLD_NOW );
-		if( pHandle )
-			return pHandle;
+		if( pHandle ) return pHandle;
+
+		Q_snprintf( path, sizeof( path ), "lib%s.so", name_buf );
+		pHandle = dlopen( path, RTLD_NOW );
+		if( pHandle ) return pHandle;
 
 		Com_PushLibraryError( dlerror() );
 	}
@@ -291,14 +322,18 @@ int d_dladdr( void *sym, Dl_info *info )
 	static int (*dladdr_real) ( void *sym, Dl_info *info );
 
 	if( !dladdr_real )
-		dladdr_real = dlsym( (void*)(size_t)(-1), "dladdr" );
-
-	Q_memset( info, 0, sizeof( *info ) );
+		dladdr_real = (int (*)(void *, Dl_info *))dlsym( (void*)(size_t)(-1), "dladdr" );
 
 	if( !dladdr_real )
-		return -1;
+		dladdr_real = (int (*)(void *, Dl_info *))dlsym( dlopen( NULL, RTLD_NOW ), "dladdr" );
 
-	return dladdr_real(  sym, info );
+	if( info )
+		Q_memset( info, 0, sizeof( *info ) );
+
+	if( !dladdr_real )
+		return 0;
+
+	return dladdr_real( sym, info );
 }
 #endif
 

@@ -28,6 +28,7 @@
 
 #ifdef __ANDROID__
 #include <android/log.h>
+#include <dlfcn.h>
 #include "linker.h"
 
 static Elf_Sym* soinfo_elf_lookup(soinfo* si, unsigned hash, const char* name) {
@@ -79,6 +80,8 @@ Elf_Sym* dlsym_handle_lookup(soinfo* si, const char* name) {
 }
 
 extern "C" void* dlsym_weak(void* handle, const char* symbol) {
+  void* sym_ptr = dlsym(handle, symbol);
+  if (sym_ptr != NULL) return sym_ptr;
 
   soinfo* found = NULL;
   Elf_Sym* sym = NULL;

@@ -88,6 +88,27 @@ int LS_dlclose( void *handle )
 }
 
 char *LS_dlerror( void );
+
+#ifdef XASH_DYNAMIC_DLADDR
+int d_dladdr( void *sym, Dl_info *info )
+{
+	static int (*dladdr_real) ( void *sym, Dl_info *info );
+
+	if( !dladdr_real )
+		dladdr_real = (int (*)(void *, Dl_info *))dlsym( (void*)(size_t)(-1), "dladdr" );
+
+	if( !dladdr_real )
+		dladdr_real = (int (*)(void *, Dl_info *))dlsym( dlopen( NULL, RTLD_NOW ), "dladdr" );
+
+	if( info )
+		Q_memset( info, 0, sizeof( *info ) );
+
+	if( !dladdr_real )
+		return 0;
+
+	return dladdr_real( sym, info );
+}
+#endif
 #if 0
 int LS_dladdr( const void *addr, Dl_info *info )
 {

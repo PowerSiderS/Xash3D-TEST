@@ -207,4 +207,7 @@ endif()
 
 if(NOT XASH_STATIC_GAMELIB)
 	target_link_libraries(${SERVER_LIBRARY} ${CMAKE_DL_LIBS})
+	if(NOT WIN32)
+		target_link_libraries(${SERVER_LIBRARY} -lm)
+	endif()
 endif()
