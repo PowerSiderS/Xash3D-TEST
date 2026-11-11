@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import java.lang.reflect.Method;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -217,11 +218,21 @@ public class LauncherActivity extends Activity
 
 	private boolean hasStoragePermission() 
 	{
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) 
+		if (Build.VERSION.SDK_INT >= 30) // Android 11+
 		{
-			return Environment.isExternalStorageManager();
-		} 
-		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) 
+			try 
+			{
+				Method m = Environment.class.getMethod("isExternalStorageManager");
+				Boolean res = (Boolean) m.invoke(null);
+				if (res != null && res) 
+				{
+					return true;
+				}
+			} 
+			catch (Exception ignored) {}
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) 
 		{
 			return checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
 		}
@@ -230,28 +241,31 @@ public class LauncherActivity extends Activity
 
 	private void requestStoragePermission() 
 	{
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) 
+		if (Build.VERSION.SDK_INT >= 30) 
 		{
 			try 
 			{
-				Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+				Intent intent = new Intent("android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION");
 				intent.setData(Uri.parse("package:" + getPackageName()));
 				startActivityForResult(intent, REQUEST_STORAGE_PERMISSION);
+				return;
 			} 
 			catch (Exception e) 
 			{
-				Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
 				try 
 				{
+					Intent intent = new Intent("android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION");
 					startActivityForResult(intent, REQUEST_STORAGE_PERMISSION);
+					return;
 				} 
 				catch (Exception ex) 
 				{
-					Toast.makeText(this, "Please grant storage permission in Settings", Toast.LENGTH_LONG).show();
+					// fallback to runtime permission below
 				}
 			}
-		} 
-		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) 
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) 
 		{
 			requestPermissions(new String[]{
 				Manifest.permission.READ_EXTERNAL_STORAGE,
