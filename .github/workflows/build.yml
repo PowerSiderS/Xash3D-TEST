@@ -1,4 +1,4 @@
-name: Build CS16Client (PC & Android)
+name: Build CS16Client (PC & Android Release)
 
 on:
   push:
@@ -9,8 +9,8 @@ on:
 
 jobs:
   build-android:
-    name: Build Android (APK)
-    runs-on: ubuntu-latest
+    name: Build Android (Release APK)
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,19 +63,19 @@ jobs:
       - name: Make Gradle Wrapper Executable
         run: chmod +x Android/gradlew
 
-      - name: Build Android APK with Gradle
+      - name: Build Android Release APK with Gradle
         run: |
           cd Android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease --stacktrace
 
-      - name: Upload Android APK
+      - name: Upload Android Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: CS16Client-Android-APK
-          path: Android/app/build/outputs/apk/debug/*.apk
+          name: CS16Client-Android-Release-APK
+          path: Android/app/build/outputs/apk/release/*.apk
 
   build-windows:
-    name: Build PC (Windows x86)
+    name: Build PC (Windows Release x86)
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -92,7 +92,7 @@ jobs:
             -DXASH_SDL=ON `
             -DCMAKE_BUILD_TYPE=Release
 
-      - name: Build with MSVC
+      - name: Build with MSVC (Release)
         run: |
           cmake --build build --config Release --parallel
 
@@ -113,54 +113,5 @@ jobs:
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CS16Client-PC-Windows-x86
+          name: CS16Client-PC-Windows-Release-x86
           path: dist-windows/
-
-  build-linux:
-    name: Build PC (Linux x86)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: Install Linux 32-bit Dependencies
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake gcc g++ gcc-multilib g++-multilib \
-            libsdl2-dev:i386 libfontconfig1-dev:i386 libfreetype6-dev:i386 \
-            libx11-dev:i386 libxext-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386 \
-            libasound2-dev:i386 zlib1g-dev:i386
-
-      - name: Configure CMake
-        run: |
-          mkdir -p build
-          cd build
-          cmake .. \
-            -DCMAKE_C_FLAGS="-m32" \
-            -DCMAKE_CXX_FLAGS="-m32" \
-            -DCMAKE_SHARED_LINKER_FLAGS="-m32" \
-            -DXASH_SDL=ON \
-            -DXASH_STATIC=OFF \
-            -DXASH_DLL_LOADER=ON \
-            -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build with Make
-        run: |
-          cmake --build build --parallel $(nproc)
-
-      - name: Package Linux Artifacts
-        run: |
-          mkdir -p dist-linux
-          find build -type f \( -name "*.so" -o -perm /111 \) ! -path "*/CMakeFiles/*" -exec cp {} dist-linux/ \;
-          ls -la dist-linux/
-
-      - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: CS16Client-PC-Linux-x86
-          path: dist-linux/
