@@ -21,7 +21,7 @@
 #
 
 cmake_minimum_required(VERSION 3.10)
-project (MAINUI)
+project (MAINUI C CXX)
 
 include(FWGSLib)
 
@@ -104,11 +104,11 @@ set(MAINUI_SOURCES
 	unicode_strtools.cpp
 	EventSystem.cpp
 	EngineCallback.cpp
-	BaseMenu.cpp
+	basemenu.cpp
 	Btns.cpp
 	MenuStrings.cpp
 	CFGScript.cpp
-	Utils.cpp
+	utils.cpp
 	Scissor.cpp
 	udll_int.cpp
 	WindowSystem.cpp
