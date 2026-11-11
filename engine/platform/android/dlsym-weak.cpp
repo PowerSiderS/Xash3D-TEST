@@ -29,6 +29,8 @@
 #ifdef __ANDROID__
 #include <android/log.h>
 #include <dlfcn.h>
+#include <string.h>
+#include <stdlib.h>
 #include "linker.h"
 
 static Elf_Sym* soinfo_elf_lookup(soinfo* si, unsigned hash, const char* name) {
