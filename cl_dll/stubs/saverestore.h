@@ -14,6 +14,12 @@
 ****/
 #ifndef SAVERESTORE_H
 #define SAVERESTORE_H
+#ifndef FALSE
+#define FALSE 0
+#endif
+#ifndef TRUE
+#define TRUE 1
+#endif
 
 class CBaseEntity;
 

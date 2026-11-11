@@ -219,7 +219,7 @@ else()
 		-D_CS16CLIENT_ENABLE_GSRC_SUPPORT
 		-DCLIENT_WEAPONS -DCLIENT_DLL
 		-D_CS16CLIENT_ALLOW_SPECIAL_SCRIPTING
-		-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf
+		-Dstricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -DFALSE=0 -DTRUE=1
 	)
 	if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 		add_definitions(-DLINUX -D_LINUX)

@@ -110,6 +110,16 @@ GNU General Public License for more details.
 	#define min( a, b )                 (((a) < (b)) ? (a) : (b))
 	#define tell( a )					lseek(a, 0, SEEK_CUR)
 
+	#ifndef BOOL
+	typedef int BOOL;
+	#endif
+	#ifndef FALSE
+	#define FALSE 0
+	#endif
+	#ifndef TRUE
+	#define TRUE 1
+	#endif
+
 	typedef unsigned char	BYTE;
 	typedef short int		WORD;
 	typedef unsigned int	DWORD;

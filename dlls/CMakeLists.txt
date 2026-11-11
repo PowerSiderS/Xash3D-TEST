@@ -187,6 +187,8 @@ else()
 		-D_strdup=strdup
 		-D_write=write
 		-D_close=close
+		-DFALSE=0
+		-DTRUE=1
 	)
 endif()
 
