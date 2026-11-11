@@ -5174,7 +5174,11 @@ qboolean SV_LoadProgs( const char *name )
 	static APIFUNCTION		GetEntityAPI;
 	static APIFUNCTION2		GetEntityAPI2;
 #ifdef DLL_LOADER
+#ifdef _MSC_VER
+	static GIVEFNPTRSTODLL GiveFnptrsToDll_w32;
+#else
 	static GIVEFNPTRSTODLL 	__attribute__((__stdcall__)) GiveFnptrsToDll_w32;
+#endif
 #endif
 	static GIVEFNPTRSTODLL GiveFnptrsToDll;
 	static NEW_DLL_FUNCTIONS_FN	GiveNewDllFuncs;

@@ -27,28 +27,24 @@ jobs:
             libncurses5 libtinfo5 libstdc++6:i386 zlib1g:i386 \
             unzip wget curl git || true
 
-      - name: Set up JDK 8
+      - name: Set up JDK 17 (for Android SDK Manager)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '17'
 
-      - name: Fill Android SDK Dependencies
+      - name: Fill Android SDK Dependencies & NDK
         run: |
           echo "Accepting Android SDK licenses..."
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-          echo "Installing required Android SDK packages..."
+          echo "Installing required Android SDK packages & NDK..."
           ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install \
             "platform-tools" \
             "platforms;android-29" \
             "build-tools;28.0.3" \
-            "cmake;3.10.2.4988404"
-
-      - name: Install & Configure Android NDK
-        run: |
-          echo "Installing Android NDK 21.4.7075529..."
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.4.7075529"
+            "cmake;3.10.2.4988404" \
+            "ndk;21.4.7075529"
 
           echo "Setting NDK environment variables..."
           echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/21.4.7075529" >> $GITHUB_ENV
@@ -59,6 +55,12 @@ jobs:
           sdk.dir=${ANDROID_HOME}
           ndk.dir=${ANDROID_HOME}/ndk/21.4.7075529
           EOF
+
+      - name: Set up JDK 8 (for Gradle 5.4.1 & AGP 3.5.0)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x Android/gradlew
@@ -88,7 +90,7 @@ jobs:
         run: |
           cmake -B build -A Win32 `
             -DXASH_STATIC=OFF `
-            -DXASH_DLL_LOADER=ON `
+            -DXASH_DLL_LOADER=OFF `
             -DXASH_SDL=ON `
             -DCMAKE_BUILD_TYPE=Release
 
