@@ -3,7 +3,17 @@
     <string name="app_name" translatable="false">CS16Client</string>
     <string name="launcher_name" translatable="false">CS16Client</string>
     <string name="launcher_name_test" translatable="false">CS16Client Test</string>
-    <string name="version_string" translatable="false">Test</string>
+    <string name="version_string" translatable="false">Fresh 1.6</string>
+    <string name="browse_folder">Browse...</string>
+    <string name="reset_default_path">Reset Default</string>
+    <string name="status_cstrike_found">&#x2713; cstrike and valve folders found!</string>
+    <string name="status_cstrike_only">&#x2713; cstrike folder found</string>
+    <string name="status_not_found">&#x26A0; Neither cstrike nor valve found in this path</string>
+    <string name="perm_desc">Storage permission is required so CS16Client can access your game files (cstrike and valve folders).</string>
+    <string name="grant_permission">Grant Storage Permission</string>
+    <string name="enable_zbot">Enable ZBot bots</string>
+    <string name="enable_yapb">Enable YaPB bots</string>
+    <string name="launch_game">LAUNCH CS 1.6</string>
 
     <!-- Generic -->
     <string name="cancel">Cancel</string>

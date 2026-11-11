@@ -9,6 +9,8 @@ android {
         applicationId "in.celest.xash3d.cs16"
         minSdkVersion 24
         targetSdkVersion 29
+        versionCode 16
+        versionName "Fresh 1.6"
 
         externalNativeBuild {
             cmake {
@@ -38,6 +40,11 @@ android {
             signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     externalNativeBuild {
         cmake {

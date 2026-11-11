@@ -1,325 +1,373 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/layout_launcher"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical"
-	android:weightSum="1"
-	tools:context="in.celest.xash3d.LauncherActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_launcher"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#141618"
+    android:orientation="vertical">
 
-	<TextView
-		android:id="@+id/textView_tittle"
-		android:layout_width="fill_parent"
-		android:layout_height="50dp"
-		android:layout_margin="5dp"
-		android:drawableStart="@drawable/ic_launcher"
-		android:drawableLeft="@drawable/ic_launcher"
-		android:drawablePadding="10dp"
-		android:gravity="center_vertical"
-		android:singleLine="true"
-		android:text="@string/launcher_name"
-		android:textAppearance="?android:attr/textAppearanceMedium"
-		android:textSize="25sp"
-		android:visibility="gone"
-		tools:visibility="gone" />
+    <!-- Top App Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1e2124"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingTop="12dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="12dp">
 
-	<TabHost
-		android:id="@+id/tabhost"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:layout_weight="1.20"
-		android:paddingLeft="5dp"
-		android:paddingTop="5dp"
-		android:paddingRight="5dp"
-		android:paddingBottom="5dp">
+        <ImageView
+            android:id="@+id/launcher_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_launcher" />
 
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginLeft="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-			<TabWidget
-				android:id="@android:id/tabs"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:showDividers="middle" />
+            <TextView
+                android:id="@+id/textView_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textColor="#ffffff"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-			<ScrollView
-				android:id="@+id/scrollView2"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/textView_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Fresh 1.6"
+                android:textColor="#e5a00d"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 
-				<FrameLayout
-					android:id="@android:id/tabcontent"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent">
+    <!-- Main Content Scroll Area -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:paddingLeft="12dp"
+        android:paddingTop="10dp"
+        android:paddingRight="12dp"
+        android:paddingBottom="10dp">
 
-					<LinearLayout
-						android:id="@+id/tab1"
-						android:layout_width="match_parent"
-						android:layout_height="match_parent"
-						android:layout_margin="10dp"
-						android:orientation="vertical"
-						android:text="@string/text_tab1" >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-						<Space
-							android:layout_width="match_parent"
-							android:layout_height="64dp"
-							android:visibility="visible"
-							tools:visibility="visible" />
+            <!-- Permission Warning Banner (if permission missing) -->
+            <LinearLayout
+                android:id="@+id/card_permission_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:visibility="gone"
+                tools:visibility="visible">
 
-						<ImageView
-							android:id="@+id/imageView"
-							android:layout_width="match_parent"
-							android:layout_height="128dp"
-							android:src="@drawable/ic_launcher" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚠ STORAGE PERMISSION REQUIRED"
+                    android:textColor="#ff9900"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-						<Space
-							android:layout_width="match_parent"
-							android:layout_height="64dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/perm_desc"
+                    android:textColor="#dddddd"
+                    android:textSize="13sp" />
 
-						<TextView
-							android:id="@+id/textView_path"
-							android:layout_width="fill_parent"
-							android:layout_height="wrap_content"
-							android:layout_margin="10dp"
-							android:text="@string/text_res_path"
-							android:textAppearance="?android:attr/textAppearanceMedium" />
-					</LinearLayout>
+                <Button
+                    android:id="@+id/button_grant_permission"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_gold"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:text="@string/grant_permission"
+                    android:textColor="#000000"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
-					<LinearLayout
-						android:id="@+id/tab2"
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content"
-						android:layout_margin="10dp"
-						android:orientation="vertical"
-						android:text="@string/text_tab2"
-						android:weightSum="0.6">
+            <!-- Card 1: Game Resources Path -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="14dp">
 
-						<TextView
-							android:id="@+id/textView_path2"
-							android:layout_width="fill_parent"
-							android:layout_height="40dp"
-							android:layout_marginLeft="10dp"
-							android:layout_marginTop="10dp"
-							android:layout_marginRight="10dp"
-							android:layout_marginBottom="2dp"
-							android:gravity="center_vertical|center_horizontal"
-							android:text="@string/text_res_tittle3"
-							android:textAppearance="?android:attr/textAppearanceMedium"
-							android:textSize="20sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.05"
+                    android:text="GAME DATA DIRECTORY"
+                    android:textColor="#e5a00d"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-						<LinearLayout
-							android:layout_width="match_parent"
-							android:layout_height="match_parent"
-							android:layout_margin="10dp"
-							android:orientation="vertical"
-							android:weightSum="1">
+                <TextView
+                    android:id="@+id/textView_path_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Checking..."
+                    android:textColor="#55ff55"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-							<TextView
-								android:id="@+id/textView_args"
-								android:layout_width="wrap_content"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:layout_marginTop="5dp"
-								android:text="@string/cmd_args_text"
-								android:textAppearance="?android:attr/textAppearanceMedium" />
+                <!-- Path display and edit field -->
+                <EditText
+                    android:id="@+id/editText_path"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/input_bg"
+                    android:hint="/sdcard/xash"
+                    android:inputType="textUri"
+                    android:maxLines="2"
+                    android:padding="10dp"
+                    android:textColor="#ffffff"
+                    android:textColorHint="#777777"
+                    android:textSize="14sp" />
 
-							<EditText
-								android:id="@+id/cmdArgs"
-								android:layout_width="match_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:layout_marginTop="5dp"
-								android:autofillHints=""
-								android:inputType="text" />
+                <!-- Path Action Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
 
-							<TextView
-								android:layout_width="fill_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:layout_marginTop="5dp"
-								android:text="@string/volume"
-								android:textAppearance="?android:attr/textAppearanceMedium" />
+                    <Button
+                        android:id="@+id/button_select_folder"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_weight="1.2"
+                        android:background="@drawable/btn_gold"
+                        android:text="📁 SELECT FOLDER"
+                        android:textColor="#000000"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-							<ToggleButton
-								android:id="@+id/useVolume"
-								android:layout_width="match_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:layout_marginTop="5dp"
-								android:text="nothing"
-								android:textOff="@string/no_volume"
-								android:textOn="@string/use_volume" />
+                    <Button
+                        android:id="@+id/button_default_path"
+                        android:layout_width="0dp"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginLeft="6dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/btn_dark"
+                        android:text="@string/reset_default_path"
+                        android:textColor="#ffffff"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
 
-							<LinearLayout
-								android:layout_width="match_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:orientation="horizontal"
-								android:weightSum="1">
+            <!-- Card 2: Bots & Controls -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="14dp">
 
-								<TextView
-									android:id="@+id/pixel_format"
-									android:layout_width="wrap_content"
-									android:layout_height="40dp"
-									android:gravity="center_vertical"
-									android:text="@string/pixel_format"
-									android:textAppearance="?android:attr/textAppearanceMedium" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.05"
+                    android:text="BOTS &amp; CONTROLS"
+                    android:textColor="#e5a00d"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-								<Spinner
-									android:id="@+id/pixelSpinner"
-									android:layout_width="0dp"
-									android:layout_height="40dp"
-									android:layout_gravity="center_vertical|end"
-									android:layout_weight="1" />
-							</LinearLayout>
+                <CheckBox
+                    android:id="@+id/use_zbot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:checked="true"
+                    android:text="Enable ZBot bots (-bots)"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp" />
 
-							<ToggleButton
-								android:id="@+id/enableResizeWorkaround"
-								android:layout_width="match_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:text="@string/resize_off"
-								android:textOff="@string/resize_off"
-								android:textOn="@string/resize_on" />
+                <CheckBox
+                    android:id="@+id/use_yapb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Enable YaPB bots (requires libyapb)"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp" />
 
-							<CheckBox
-								android:id="@+id/immersive_mode"
-								android:layout_width="match_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:text="@string/immersive_mode" />
+                <CheckBox
+                    android:id="@+id/immersive_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:checked="true"
+                    android:text="Fullscreen (Immersive Mode)"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-							<CheckBox
-								android:id="@+id/resolution"
-								android:layout_width="match_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:text="@string/resolution" />
+            <!-- Card 3: Command Line Arguments -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="14dp">
 
-							<RadioGroup
-								android:id="@+id/scale_group"
-								android:layout_width="match_parent"
-								android:layout_height="wrap_content"
-								android:layout_margin="10dp"
-								android:orientation="vertical"
-								android:weightSum="1">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.05"
+                    android:text="COMMAND LINE ARGUMENTS"
+                    android:textColor="#e5a00d"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-								<TextView
-									android:layout_width="wrap_content"
-									android:layout_height="wrap_content"
-									android:layout_margin="10dp"
-									android:text="@string/resolution_mod_warn"
-									android:textAppearance="@style/red_small_text" />
+                <EditText
+                    android:id="@+id/cmdArgs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/input_bg"
+                    android:hint="-console"
+                    android:inputType="text"
+                    android:padding="10dp"
+                    android:textColor="#ffffff"
+                    android:textColorHint="#777777"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-								<TextView
-									android:id="@+id/resolution_result"
-									android:layout_width="wrap_content"
-									android:layout_height="wrap_content"
-									android:layout_margin="10dp"
-									android:layout_marginTop="5dp"
-									android:textAppearance="?android:attr/textAppearanceSmall" />
+            <!-- Expandable Advanced Engine Options Button -->
+            <TextView
+                android:id="@+id/toggle_advanced"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Advanced Engine Options ▼"
+                android:textColor="#888888"
+                android:textSize="13sp" />
 
-								<RadioButton
-									android:id="@+id/resolution_scale_r"
-									android:layout_width="wrap_content"
-									android:layout_height="wrap_content"
-									android:text="@string/resolution_scale" />
+            <!-- Hidden Advanced Options Card -->
+            <LinearLayout
+                android:id="@+id/layout_advanced_options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/card_bg"
+                android:orientation="vertical"
+                android:padding="14dp"
+                android:visibility="gone">
 
-								<EditText
-									android:id="@+id/resolution_scale"
-									android:layout_width="match_parent"
-									android:layout_height="wrap_content"
-									android:layout_margin="10dp"
-									android:layout_marginTop="3dp"
-									android:inputType="numberDecimal" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ADVANCED SETTINGS"
+                    android:textColor="#e5a00d"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-								<RadioButton
-									android:id="@+id/resolution_custom_r"
-									android:layout_width="wrap_content"
-									android:layout_height="wrap_content"
-									android:text="@string/resolution_custom" />
+                <CheckBox
+                    android:id="@+id/useVolume"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Use volume buttons in game"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp" />
 
-								<LinearLayout
-									android:layout_width="match_parent"
-									android:layout_height="wrap_content"
-									android:orientation="horizontal"
-									android:weightSum="1">
+                <CheckBox
+                    android:id="@+id/enableResizeWorkaround"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:checked="true"
+                    android:text="Resize workaround"
+                    android:textColor="#ffffff"
+                    android:textSize="14sp" />
 
-									<EditText
-										android:id="@+id/resolution_width"
-										android:layout_width="100dp"
-										android:layout_height="wrap_content"
-										android:layout_marginStart="5dp"
-										android:layout_marginLeft="5dp"
-										android:layout_marginTop="3dp"
-										android:layout_marginEnd="3dp"
-										android:layout_marginRight="3dp"
-										android:layout_marginBottom="5dp"
-										android:inputType="numberDecimal" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-									<TextView
-										android:layout_width="wrap_content"
-										android:layout_height="wrap_content"
-										android:layout_marginTop="5dp"
-										android:layout_marginBottom="5dp"
-										android:text="x"
-										android:textAppearance="?android:attr/textAppearanceSmall" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pixel format: "
+                        android:textColor="#ffffff"
+                        android:textSize="14sp" />
 
-									<EditText
-										android:id="@+id/resolution_height"
-										android:layout_width="100dp"
-										android:layout_height="wrap_content"
-										android:layout_marginStart="3dp"
-										android:layout_marginLeft="3dp"
-										android:layout_marginTop="5dp"
-										android:layout_marginBottom="5dp"
-										android:inputType="numberDecimal" />
-								</LinearLayout>
-							</RadioGroup>
-							<!--<TextView
-								android:id="@+id/textView7"
-								android:layout_marginBottom="10dp"
-								android:layout_width="fill_parent"
-								android:layout_height="0dp"
-								android:layout_gravity="center_horizontal"
-								android:layout_weight="1"
-							android:clickable="false" />-->
-						</LinearLayout>
-					</LinearLayout>
-				</FrameLayout>
-			</ScrollView>
-		</LinearLayout>
-	</TabHost>
+                    <Spinner
+                        android:id="@+id/pixelSpinner"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="50dp"
-		android:layout_gravity="bottom"
-		android:orientation="horizontal">
+    <!-- Bottom Launch Game Button Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1e2124"
+        android:elevation="8dp"
+        android:paddingLeft="14dp"
+        android:paddingTop="10dp"
+        android:paddingRight="14dp"
+        android:paddingBottom="12dp">
 
-		<Button
-			android:id="@+id/button_about"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="start|center_vertical"
-			android:onClick="aboutXash"
-			android:text="@string/about_button"
-			android:visibility="gone"
-			tools:visibility="gone" />
-
-		<Button
-			android:id="@+id/button_launch"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_column="6"
-			android:layout_marginLeft="0dp"
-			android:layout_weight="0.87"
-			android:onClick="startXash"
-			android:text="@string/launch_button"
-			android:layout_marginStart="0dp" />
-	</LinearLayout>
+        <Button
+            android:id="@+id/button_launch"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/btn_gold"
+            android:elevation="4dp"
+            android:letterSpacing="0.05"
+            android:onClick="startXash"
+            android:text="LAUNCH CS 1.6"
+            android:textColor="#000000"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 </LinearLayout>

@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<style name="AppTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+		<item name="android:windowBackground">#181a1b</item>
+		<item name="android:colorBackground">#181a1b</item>
+		<item name="android:textColor">#ffffff</item>
+	</style>
+
 	<style name="red_small_text" parent="@android:style/TextAppearance.Small">
-		<item name="android:textColor">#FF0000</item>
+		<item name="android:textColor">#FF5555</item>
 	</style>
 </resources>

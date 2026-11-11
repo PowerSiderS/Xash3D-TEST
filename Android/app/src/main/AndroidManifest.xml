@@ -2,12 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="in.celest.xash3d.cs16"
     android:installLocation="auto"
-    android:versionCode="1613"
-    android:versionName="v22-hy">
+    android:versionCode="16"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:versionName="Fresh 1.6">
     <!-- OpenGL ES 1.1 -->
     <uses-feature android:glEsVersion="0x00010000" /> <!-- Permissions -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -16,7 +18,8 @@
 
     <application
         android:allowBackup="false"
-        android:debuggable="true"
+        android:requestLegacyExternalStorage="true"
+        android:theme="@style/AppTheme"
         android:fullBackupContent="@xml/backup_descriptor"
         android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"
