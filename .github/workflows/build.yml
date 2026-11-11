@@ -1,0 +1,166 @@
+name: Build CS16Client (PC & Android)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: Build Android (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Install System Dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build gcc g++ gcc-multilib g++-multilib \
+            libncurses5 libtinfo5 libstdc++6:i386 zlib1g:i386 \
+            unzip wget curl git || true
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+
+      - name: Fill Android SDK Dependencies
+        run: |
+          echo "Accepting Android SDK licenses..."
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+          echo "Installing required Android SDK packages..."
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-29" \
+            "build-tools;28.0.3" \
+            "cmake;3.10.2.4988404"
+
+      - name: Install & Configure Android NDK
+        run: |
+          echo "Installing Android NDK 21.4.7075529..."
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.4.7075529"
+
+          echo "Setting NDK environment variables..."
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/21.4.7075529" >> $GITHUB_ENV
+          echo "ANDROID_NDK_ROOT=${ANDROID_HOME}/ndk/21.4.7075529" >> $GITHUB_ENV
+
+          echo "Creating local.properties..."
+          cat <<EOF > Android/local.properties
+          sdk.dir=${ANDROID_HOME}
+          ndk.dir=${ANDROID_HOME}/ndk/21.4.7075529
+          EOF
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x Android/gradlew
+
+      - name: Build Android APK with Gradle
+        run: |
+          cd Android
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CS16Client-Android-APK
+          path: Android/app/build/outputs/apk/debug/*.apk
+
+  build-windows:
+    name: Build PC (Windows x86)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -A Win32 `
+            -DXASH_STATIC=OFF `
+            -DXASH_DLL_LOADER=ON `
+            -DXASH_SDL=ON `
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build with MSVC
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Package Windows Artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path "dist-windows" -Force
+          if (Test-Path "SDL2\lib\x86\SDL2.dll") {
+            Copy-Item "SDL2\lib\x86\SDL2.dll" "dist-windows\" -Force
+          }
+          Get-ChildItem -Path "build" -Recurse -Include "*.dll","*.exe" | ForEach-Object {
+            if ($_.FullName -notmatch "CMakeFiles") {
+              Copy-Item $_.FullName "dist-windows\" -Force
+            }
+          }
+          Get-ChildItem -Path "dist-windows"
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CS16Client-PC-Windows-x86
+          path: dist-windows/
+
+  build-linux:
+    name: Build PC (Linux x86)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Install Linux 32-bit Dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake gcc g++ gcc-multilib g++-multilib \
+            libsdl2-dev:i386 libfontconfig1-dev:i386 libfreetype6-dev:i386 \
+            libx11-dev:i386 libxext-dev:i386 libgl1-mesa-dev libgl1-mesa-dev:i386 \
+            libasound2-dev:i386 zlib1g-dev:i386
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. \
+            -DCMAKE_C_FLAGS="-m32" \
+            -DCMAKE_CXX_FLAGS="-m32" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-m32" \
+            -DXASH_SDL=ON \
+            -DXASH_STATIC=OFF \
+            -DXASH_DLL_LOADER=ON \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build with Make
+        run: |
+          cmake --build build --parallel $(nproc)
+
+      - name: Package Linux Artifacts
+        run: |
+          mkdir -p dist-linux
+          find build -type f \( -name "*.so" -o -perm /111 \) ! -path "*/CMakeFiles/*" -exec cp {} dist-linux/ \;
+          ls -la dist-linux/
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CS16Client-PC-Linux-x86
+          path: dist-linux/

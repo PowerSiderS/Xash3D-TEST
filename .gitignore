@@ -1,0 +1,97 @@
+# ====================================================================
+# CS16Client / Xash3D Git Ignore
+# ====================================================================
+
+# Build directories
+build/
+bld/
+bin/
+out/
+Release/
+Debug/
+cmake-build-*/
+[Bb]uild*/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+Makefile
+Makefile.dep
+ALL_BUILD.*
+ZERO_CHECK.*
+
+# Object & intermediate files
+*.obj
+*.o
+*.slo
+*.lo
+*.gch
+*.pch
+*.tlog
+*.lastbuildstate
+*.log
+*.idb
+*.ilk
+*.exp
+*.pdb
+*.iobj
+*.ipdb
+*.ipch
+
+# Binary outputs
+*.so
+*.dylib
+*.dll
+*.lib
+*.a
+*.exe
+*.out
+*.app
+
+# Keep prebuilt SDL2 Windows libraries
+!SDL2/lib/
+!SDL2/lib/**
+
+# Visual Studio / MSVC
+.vs/
+*.user
+*.userprefs
+*.suo
+*.sdf
+*.opensdf
+*.opendb
+*.VC.db
+*.sln.docstates
+
+# Visual Studio Code & JetBrains
+.vscode/
+.idea/
+
+# Android / Gradle
+.gradle/
+local.properties
+Android/.gradle/
+Android/build/
+Android/.cxx/
+Android/app/build/
+Android/app/.cxx/
+Android/captures/
+*.apk
+*.aab
+*.iml
+*.hprof
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Duplicate SDL archives/directories
+SDL2-*/
