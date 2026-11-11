@@ -104,11 +104,11 @@ set(MAINUI_SOURCES
 	unicode_strtools.cpp
 	EventSystem.cpp
 	EngineCallback.cpp
-	basemenu.cpp
+	BaseMenu.cpp
 	Btns.cpp
 	MenuStrings.cpp
 	CFGScript.cpp
-	utils.cpp
+	Utils.cpp
 	Scissor.cpp
 	udll_int.cpp
 	WindowSystem.cpp
