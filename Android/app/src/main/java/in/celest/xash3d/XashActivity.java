@@ -36,7 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.security.MessageDigest;
 
-import in.celest.xash3d.csbtem.R;
+import in.celest.xash3d.cs16.R;
 import in.celest.xash3d.XashConfig;
 import in.celest.xash3d.JoystickHandler;
 import android.provider.Settings.Secure;
