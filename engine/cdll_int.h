@@ -142,8 +142,8 @@ typedef struct cl_enginefuncs_s
 	// command handlers
 	int	(*pfnAddCommand)( char *cmd_name, void (*function)(void) );
 	int	(*pfnHookUserMsg)( char *szMsgName, pfnUserMsgHook pfn );
-	int	(*pfnServerCmd)( char *szCmdString );
-	int	(*pfnClientCmd)( char *szCmdString );
+	int	(*pfnServerCmd)( const char *szCmdString );
+	int	(*pfnClientCmd)( const char *szCmdString );
 
 	void	(*pfnGetPlayerInfo)( int ent_num, hud_player_info_t *pinfo );
 

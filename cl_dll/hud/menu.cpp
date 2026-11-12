@@ -172,7 +172,7 @@ int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 	{
 		m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
 		m_iFlags &= ~HUD_DRAW;
-		ClientCmd("touch_removebutton _menu_*");
+		ClientCmd((char *)"touch_removebutton _menu_*");
 		return 1;
 	}
 
@@ -345,7 +345,7 @@ void CHudMenu::ShowVGUIMenu( int menuType )
 	}
 
 	m_fMenuDisplayed = 1;
-	ClientCmd(szCmd);
+	ClientCmd((char *)szCmd);
 }
 
 void CHudMenu::UserCmd_ShowVGUIMenu()

@@ -437,6 +437,7 @@ DECLARE_JNI_INTERFACE( int, nativeInit, jobject array )
 	int i;
 	int argc;
 	int status;
+	jclass localCls;
 	/* Prepare the arguments. */
 
 	int len = (*env)->GetArrayLength(env, array);
@@ -466,7 +467,7 @@ DECLARE_JNI_INTERFACE( int, nativeInit, jobject array )
 	/* Init callbacks. */
 
 	jni.env = env;
-	jclass localCls = (*env)->FindClass(env, "in/celest/xash3d/XashActivity");
+	localCls = (*env)->FindClass(env, "in/celest/xash3d/XashActivity");
 	if( localCls )
 	{
 		jni.actcls = (jclass)(*env)->NewGlobalRef(env, localCls);
