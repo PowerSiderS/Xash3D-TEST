@@ -199,7 +199,6 @@ elseif(WIN32)
 	set_target_properties(${MAINUI_LIBRARY} PROPERTIES
 		OUTPUT_NAME menu PREFIX "")
 elseif(ANDROID)
-	set(MAINUI_USE_STB TRUE)
 	set_target_properties(${MAINUI_LIBRARY} PROPERTIES
 		OUTPUT_NAME menu)
 endif()

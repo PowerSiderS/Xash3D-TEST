@@ -1160,6 +1160,9 @@ void FS_Rescan( void )
 		FS_AddPack_Fullpath( str, NULL, false, FS_NOWRITE_PATH | FS_CUSTOM_PATH );
 	if( str = getenv("XASH3D_EXTRAS_PAK2") )
 		FS_AddPack_Fullpath( str, NULL, false, FS_NOWRITE_PATH | FS_CUSTOM_PATH );
+	FS_AddPack_Fullpath( "extras.pak", NULL, false, FS_NOWRITE_PATH | FS_CUSTOM_PATH );
+	FS_AddPack_Fullpath( va( "%s/extras.pak", GI->basedir ), NULL, false, FS_NOWRITE_PATH | FS_CUSTOM_PATH );
+	FS_AddPack_Fullpath( va( "%s/extras.pak", GI->gamefolder ), NULL, false, FS_NOWRITE_PATH | FS_CUSTOM_PATH );
 	//FS_AddPack_Fullpath( "/data/data/in.celest.xash3d.hl.test/files/pak.pak", NULL, false, FS_NOWRITE_PATH | FS_CUSTOM_PATH );
 #elif defined(__SAILFISH__)
 	{

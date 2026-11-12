@@ -291,7 +291,8 @@ void CStbFont::GetCharRGBA(int ch, Point pt, Size sz, unsigned char *rgba, Size 
 
 	int bm_top, bm_left, bm_rows, bm_width;
 
-	buf = stbtt_GetCodepointBitmap( &m_fontInfo, scale, scale, ch, &bm_width, &bm_rows, &bm_left, &bm_top );
+	byte *raw_buf = stbtt_GetCodepointBitmap( &m_fontInfo, scale, scale, ch, &bm_width, &bm_rows, &bm_left, &bm_top );
+	buf = raw_buf;
 
 	// see where we should start rendering
 	const int pushDown = m_iAscent + bm_top;
@@ -335,6 +336,9 @@ void CStbFont::GetCharRGBA(int ch, Point pt, Size sz, unsigned char *rgba, Size 
 			}
 		}
 	}
+
+	if( raw_buf )
+		stbtt_FreeBitmap( raw_buf, 0 );
 
 	drawSize.w = xend - xstart + m_iBlur * 2 + m_iOutlineSize * 2;
 	drawSize.h = yend - ystart + m_iBlur * 2 + m_iOutlineSize * 2;
