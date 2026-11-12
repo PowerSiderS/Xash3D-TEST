@@ -130,7 +130,13 @@ public class LauncherActivity extends Activity
 		checkBoxYaPB.setChecked(mPref.getBoolean("yapbs", false));
 		checkBoxImmersive.setChecked(mPref.getBoolean("immersive_mode", true));
 		checkBoxResize.setChecked(mPref.getBoolean("enableResizeWorkaround", true));
-		editTextCmdArgs.setText(mPref.getString("argv", "-console"));
+		String savedArgv = mPref.getString("argv", "-console");
+		if (savedArgv != null && savedArgv.contains("-log")) 
+		{
+			savedArgv = savedArgv.replaceAll("(?i)\\s*-log\\b", "").trim();
+			mPref.edit().putString("argv", savedArgv).apply();
+		}
+		editTextCmdArgs.setText(savedArgv);
 
 		checkBoxVolume.setChecked(mPref.getBoolean("usevolume", true));
 
@@ -584,11 +590,10 @@ public class LauncherActivity extends Activity
 		}
 
 		String argv = editTextCmdArgs.getText().toString().trim();
-
-		// Always ensure -log is present directly without needing an option
-		if (!argv.contains("-log")) 
+		if (argv.contains("-log")) 
 		{
-			argv = argv.isEmpty() ? "-log" : argv + " -log";
+			argv = argv.replaceAll("(?i)\\s*-log\\b", "").trim();
+			editTextCmdArgs.setText(argv);
 		}
 
 		// Bot configuration
@@ -596,7 +601,7 @@ public class LauncherActivity extends Activity
 		{
 			if (!argv.contains("-bots")) 
 			{
-				argv = argv + " -bots";
+				argv = argv.isEmpty() ? "-bots" : argv + " -bots";
 			}
 		}
 
@@ -606,7 +611,7 @@ public class LauncherActivity extends Activity
 			File yapb = new File(libDir, "libyapb.so");
 			if (yapb.exists()) 
 			{
-				argv = argv + " -dll " + yapb.getAbsolutePath();
+				argv = argv.isEmpty() ? ("-dll " + yapb.getAbsolutePath()) : (argv + " -dll " + yapb.getAbsolutePath());
 			}
 		}
 

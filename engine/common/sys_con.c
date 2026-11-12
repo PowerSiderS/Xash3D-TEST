@@ -122,10 +122,15 @@ void Sys_InitLog( void )
 {
 	const char	*mode;
 
-	if( Sys_CheckParm( "-log" ) )
+	// Write engine.log by default without requiring -log command line argument
+	if( !Sys_CheckParm( "-nolog" ) )
 	{
 		s_ld.log_active = true;
 		Q_strncpy( s_ld.log_path, "engine.log", sizeof( s_ld.log_path ));
+	}
+	else
+	{
+		s_ld.log_active = false;
 	}
 
 	if( host.change_game )
@@ -235,6 +240,6 @@ void Sys_PrintLog( const char *pMsg )
 
 int Sys_LogFileNo( void )
 {
-	if( s_ld.logfileno ) fflush( s_ld.logfile );
+	if( s_ld.logfile ) fflush( s_ld.logfile );
 	return s_ld.logfileno;
 }

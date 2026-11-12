@@ -297,7 +297,11 @@ public class XashActivity extends Activity {
 		Intent intent = getIntent();
 		final String enginedir = getFilesDir().getParentFile().getPath() + "/lib";
 				
-		String argv       = FWGSLib.getStringExtraFromIntent( intent, "argv", mPref.getString( "argv", "-dev 3 -log" ) );
+		String argv       = FWGSLib.getStringExtraFromIntent( intent, "argv", mPref.getString( "argv", "-console" ) );
+		if( argv != null && argv.contains( "-log" ) )
+		{
+			argv = argv.replaceAll( "(?i)\\s*-log\\b", "" ).trim();
+		}
 		String gamelibdir = FWGSLib.getStringExtraFromIntent( intent, "gamelibdir", enginedir );
 		String gamedir    = FWGSLib.getStringExtraFromIntent( intent, "gamedir", "cstrike" );
 		String basedir    = FWGSLib.getStringExtraFromIntent( intent, "basedir", mPref.getString( "basedir", FWGSLib.getDefaultXashPath(this) ) );
