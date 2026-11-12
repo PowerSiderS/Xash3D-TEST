@@ -120,11 +120,13 @@ GNU General Public License for more details.
 	#define TRUE 1
 	#endif
 
+#if !defined(OSCONFIG_H) && !defined(_OSCONFIG_H)
 	typedef unsigned char	BYTE;
 	typedef short int		WORD;
 	typedef unsigned int	DWORD;
 	typedef int				LONG;
 	typedef unsigned int	ULONG;
+#endif
 	typedef int				WPARAM;
 	typedef unsigned int	LPARAM;
 
