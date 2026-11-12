@@ -45,7 +45,7 @@ import java.lang.reflect.Method;
 public class LauncherActivity extends Activity 
 {
 	public static final String TAG = "LauncherActivity";
-	public static final int PAK_VERSION = 6;
+	public static final int PAK_VERSION = 7;
 	private static final int REQUEST_STORAGE_PERMISSION = 1001;
 	private static final int REQUEST_FOLDER_PICK = 1002;
 

@@ -77,6 +77,10 @@ void CHudMenu :: Reset( void )
 {
 	g_szPrelocalisedMenuString[0] = 0;
 	m_fWaitingForMore = FALSE;
+	m_fMenuDisplayed = 0;
+	m_iFlags &= ~HUD_DRAW;
+	gMobileAPI.pfnTouchRemoveButton( "_menu_*" );
+	ClientCmd( "touch_setclientonly 0" );
 }
 
 int CHudMenu :: VidInit( void )
@@ -144,6 +148,8 @@ void CHudMenu :: SelectMenuItem( int menu_item )
 		// remove the menu
 		m_fMenuDisplayed = 0;
 		m_iFlags &= ~HUD_DRAW;
+		gMobileAPI.pfnTouchRemoveButton( "_menu_*" );
+		ClientCmd( "touch_setclientonly 0" );
 	}
 }
 
@@ -174,7 +180,7 @@ int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 	{
 		m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
 		m_iFlags &= ~HUD_DRAW;
-		ClientCmd("touch_removebutton _menu_*");
+		ClientCmd("touch_removebutton _menu_*; touch_setclientonly 0");
 		return 1;
 	}
 
@@ -249,6 +255,7 @@ int CHudMenu::MsgFunc_BuyClose(const char *pszName, int iSize, void *pbuf)
 {
 	UserCmd_OldStyleMenuClose();
 	gMobileAPI.pfnTouchRemoveButton("_menu_*");
+	ClientCmd( "touch_setclientonly 0" );
 	return 1;
 }
 
@@ -272,6 +279,7 @@ void CHudMenu::UserCmd_OldStyleMenuClose()
 	m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
 	m_iFlags &= ~HUD_DRAW;
 	gMobileAPI.pfnTouchRemoveButton("_menu_*");
+	ClientCmd( "touch_setclientonly 0" );
 }
 
 // lol, no real VGUI here
@@ -343,7 +351,7 @@ void CHudMenu::ShowVGUIMenu( int menuType )
 		szCmd = "exec touch/numerical_menu.cfg";
 		break;
 	default:
-		szCmd = "touch_removebutton _menu_*"; // back to the default touch page
+		szCmd = "touch_removebutton _menu_*; touch_setclientonly 0"; // back to the default touch page
 		m_fMenuDisplayed = 0;
 		break;
 	}
