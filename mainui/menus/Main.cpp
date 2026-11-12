@@ -1,36 +1,42 @@
 /*
-*
-*	This file is part of CS16Client.
-*
-*	CS16Client is free software: you can redistribute it and/or modify
-*	it under the terms of the GNU General Public License as published by
-*	the Free Software Foundation, either version 3 of the License, or
-*	(at your option) any later version.
-*
-*	CS16Client is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*	GNU General Public License for more details.
-*
-*	You should have received a copy of the GNU General Public License
-*	along with CS16Client.  If not, see <http://www.gnu.org/licenses/>.
-*
+Copyright (C) 1997-2001 Id Software, Inc.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
 */
 
+
 #include "Framework.h"
+#include "Action.h"
 #include "Bitmap.h"
 #include "PicButton.h"
 #include "YesNoMessageBox.h"
-#include "Action.h"
-#include "BtnsBMPTable.h"
+#include "keydefs.h"
+#include "MenuStrings.h"
+#include "PlayerIntroduceDialog.h"
 
-#define ART_MINIMIZE_N "gfx/shell/min_n.tga"
-#define ART_MINIMIZE_F "gfx/shell/min_f.tga"
-#define ART_MINIMIZE_D "gfx/shell/min_d.tga"
+#if !(defined(__ANDROID__) || defined(__SAILFISH__))
+#define ART_MINIMIZE_N	"gfx/shell/min_n"
+#define ART_MINIMIZE_F	"gfx/shell/min_f"
+#define ART_MINIMIZE_D	"gfx/shell/min_d"
+#endif
 
-#define ART_CLOSEBTN_N "gfx/shell/cls_n.tga"
-#define ART_CLOSEBTN_F "gfx/shell/cls_f.tga"
-#define ART_CLOSEBTN_D "gfx/shell/cls_d.tga"
+#define ART_CLOSEBTN_N	"gfx/shell/cls_n"
+#define ART_CLOSEBTN_F	"gfx/shell/cls_f"
+#define ART_CLOSEBTN_D	"gfx/shell/cls_d"
 
 class CMenuMain: public CMenuFramework
 {
@@ -45,7 +51,6 @@ private:
 
 	void QuitDialog( void *pExtra = NULL );
 	void DisconnectDialogCb();
-	void ViewReadmeCb();
 
 	CMenuPicButton	console;
 	class CMenuMainBanner : public CMenuBannerBitmap
@@ -56,14 +61,15 @@ private:
 
 	CMenuPicButton	resumeGame;
 	CMenuPicButton	disconnect;
-	CMenuPicButton	createGame;
-	CMenuPicButton	multiPlayer;
 	CMenuPicButton	configuration;
-	CMenuPicButton	viewReadme;
+	CMenuPicButton	multiPlayer;
+	CMenuPicButton	customGame;
 	CMenuPicButton	quit;
 
 	// quit dialog
 	CMenuYesNoMessageBox dialog;
+
+	bool bCustomGame;
 };
 
 static CMenuMain uiMain;
@@ -108,16 +114,6 @@ void CMenuMain::DisconnectDialogCb()
 	dialog.Show();
 }
 
-void CMenuMain::ViewReadmeCb()
-{
-	if( EngFuncs::FileExists( "readme.txt", 1 ) )
-		EngFuncs::ShellExecute( "readme.txt", NULL, false );
-	else if( EngFuncs::FileExists( "manual/manual.htm", 1 ) )
-		EngFuncs::ShellExecute( "manual/manual.htm", NULL, false );
-	else
-		EngFuncs::ShellExecute( "cstrike/readme.txt", NULL, false );
-}
-
 /*
 =================
 CMenuMain::Key
@@ -143,6 +139,10 @@ bool CMenuMain::KeyDown( int key )
 
 void CMenuMain::_Init( void )
 {
+	if( EngFuncs::GetCvarFloat( "host_allow_changegame" ))
+		bCustomGame = true;
+	else bCustomGame = false;
+
 	// console
 	console.SetNameAndStatus( L( "GameUI_Console" ), L( "Show console" ) );
 	console.iFlags |= QMF_NOTIFY;
@@ -163,13 +163,6 @@ void CMenuMain::_Init( void )
 	disconnect.iFlags |= QMF_NOTIFY;
 	disconnect.onReleased = VoidCb( &CMenuMain::DisconnectDialogCb );
 
-	createGame.SetNameAndStatus( L( "GameUI_GameMenu_CreateServer" ), L( "Create new LAN game" ) );
-	createGame.SetPicture( PC_CREATE_GAME );
-	createGame.iFlags |= QMF_NOTIFY;
-	createGame.onReleased = UI_CreateGame_Menu;
-	if( !EngFuncs::CheckGameDll( ))
-		createGame.SetGrayed( true );
-
 	multiPlayer.SetNameAndStatus( L( "GameUI_Multiplayer" ), L( "StringsList_198" ) );
 	multiPlayer.SetPicture( PC_MULTIPLAYER );
 	multiPlayer.iFlags |= QMF_NOTIFY;
@@ -180,10 +173,10 @@ void CMenuMain::_Init( void )
 	configuration.iFlags |= QMF_NOTIFY;
 	configuration.onReleased = UI_Options_Menu;
 
-	viewReadme.SetNameAndStatus( L( "View readme" ), L( "View the game readme file" ) );
-	viewReadme.SetPicture( PC_VIEW_README );
-	viewReadme.iFlags |= QMF_NOTIFY;
-	viewReadme.onReleased = VoidCb( &CMenuMain::ViewReadmeCb );
+	customGame.SetNameAndStatus( L( "GameUI_ChangeGame" ), L( "StringsList_530" ) );
+	customGame.SetPicture( PC_CUSTOM_GAME );
+	customGame.iFlags |= QMF_NOTIFY;
+	customGame.onReleased = UI_CustomGame_Menu;
 
 	quit.SetNameAndStatus( L( "GameUI_GameMenu_Quit" ), L( "StringsList_236" ) );
 	quit.SetPicture( PC_QUIT );
@@ -195,14 +188,18 @@ void CMenuMain::_Init( void )
 	AddItem( background );
 	AddItem( banner );
 
-	AddItem( resumeGame );
-	AddItem( disconnect );
+	if ( EngFuncs::GetCvarFloat( "developer" ))
+		AddItem( console );
 
-	AddItem( console );
-	AddItem( createGame );
-	AddItem( multiPlayer );
+	AddItem( disconnect );
+	AddItem( resumeGame );
+
 	AddItem( configuration );
-	AddItem( viewReadme );
+	AddItem( multiPlayer );
+
+	if ( bCustomGame )
+		AddItem( customGame );
+
 	AddItem( quit );
 }
 
@@ -213,9 +210,7 @@ UI_Main_Init
 */
 void CMenuMain::_VidInit( void )
 {
-	bool active = CL_IsActive( ) ? true : false;
-
-	if ( active )
+	if ( CL_IsActive( ))
 	{
 		resumeGame.Show();
 		disconnect.Show();
@@ -226,24 +221,37 @@ void CMenuMain::_VidInit( void )
 		disconnect.Hide();
 	}
 
+	if( EngFuncs::GetCvarFloat( "developer" ) )
+	{
+		if ( CL_IsActive( ) && bCustomGame )
+		{
+			console.pos.y = 300;
+		}
+		else if ( ( CL_IsActive( ) && !bCustomGame ) )
+		{
+			console.pos.y = 350;
+		}
+		else if ((!CL_IsActive() && bCustomGame))
+		{
+			console.pos.y = 400;
+		}
+		else if (!CL_IsActive() && !bCustomGame)
+		{
+			console.pos.y = 450;
+		}
+	}
+
 	CMenuPicButton::ClearButtonStack();
 
-	// In-game buttons (appear above the main layout when active)
-	resumeGame.SetCoord( 24, 250 );
-	disconnect.SetCoord( 24, 300 );
+	console.pos.x = 24;
+	resumeGame.SetCoord( 24, bCustomGame ? 350 : 400 );
+	disconnect.SetCoord( 24, bCustomGame ? 400 : 450 );
 
-	// Fixed layout positions - each button STAYS IN ITS PLACE in the exact requested order:
-	// 1: Console
-	// 2: Create Game
-	// 3: Multiplayer
-	// 4: Configuration
-	// 5: View readme
-	// 6: Quit
-	console.SetCoord( 24, 350 );
-	createGame.SetCoord( 24, 400 );
-	multiPlayer.SetCoord( 24, 450 );
-	configuration.SetCoord( 24, 500 );
-	viewReadme.SetCoord( 24, 550 );
+	configuration.SetCoord( 24, bCustomGame ? 450 : 500 );
+	multiPlayer.SetCoord( 24, bCustomGame ? 500 : 550 );
+
+	customGame.SetCoord( 24, 550 );
+
 	quit.SetCoord( 24, 600 );
 }
 

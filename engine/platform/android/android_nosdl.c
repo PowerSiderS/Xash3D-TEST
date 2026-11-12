@@ -466,7 +466,16 @@ DECLARE_JNI_INTERFACE( int, nativeInit, jobject array )
 	/* Init callbacks. */
 
 	jni.env = env;
-	jni.actcls = (*env)->FindClass(env, "in/celest/xash3d/XashActivity");
+	jclass localCls = (*env)->FindClass(env, "in/celest/xash3d/XashActivity");
+	if( localCls )
+	{
+		jni.actcls = (jclass)(*env)->NewGlobalRef(env, localCls);
+		(*env)->DeleteLocalRef(env, localCls);
+	}
+	else
+	{
+		jni.actcls = NULL;
+	}
 	jni.swapBuffers = (*env)->GetStaticMethodID(env, jni.actcls, "swapBuffers", "()V");
 	jni.toggleEGL = (*env)->GetStaticMethodID(env, jni.actcls, "toggleEGL", "(I)V");
 	jni.enableTextInput = (*env)->GetStaticMethodID(env, jni.actcls, "showKeyboard", "(I)V");
@@ -779,8 +788,30 @@ DECLARE_JNI_INTERFACE( int, nativeTestWritePermission, jstring jPath )
 	return ret;
 }
 
+static JNIEnv* Android_GetJNIEnv( void )
+{
+	JNIEnv *env = NULL;
+	if( jni.vm )
+	{
+		if( (*jni.vm)->GetEnv( jni.vm, (void**)&env, JNI_VERSION_1_6 ) == JNI_OK && env )
+		{
+			if( (*env)->ExceptionCheck( env ) )
+				(*env)->ExceptionClear( env );
+			return env;
+		}
+	}
+	if( jni.env )
+	{
+		if( (*jni.env)->ExceptionCheck( jni.env ) )
+			(*jni.env)->ExceptionClear( jni.env );
+		return jni.env;
+	}
+	return NULL;
+}
+
 JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM *vm, void *reserved )
 {
+	jni.vm = vm;
 	return JNI_VERSION_1_6;
 }
 
@@ -921,21 +952,28 @@ Show virtual keyboard
 */
 void Android_EnableTextInput( qboolean enable, qboolean force )
 {
+	JNIEnv *env = Android_GetJNIEnv();
+	if( !env || !jni.actcls || !jni.enableTextInput )
+		return;
+
 	if( force )
-		(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.enableTextInput, enable );
+		(*env)->CallStaticVoidMethod( env, jni.actcls, jni.enableTextInput, enable );
 	else if( enable )
 	{
 		if( !host.textmode )
 		{
-			(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.enableTextInput, 1 );
+			(*env)->CallStaticVoidMethod( env, jni.actcls, jni.enableTextInput, 1 );
 		}
 		host.textmode = true;
 	}
 	else
 	{
-		(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.enableTextInput, 0 );
+		(*env)->CallStaticVoidMethod( env, jni.actcls, jni.enableTextInput, 0 );
 		host.textmode = false;
 	}
+
+	if( (*env)->ExceptionCheck( env ) )
+		(*env)->ExceptionClear( env );
 }
 
 /*

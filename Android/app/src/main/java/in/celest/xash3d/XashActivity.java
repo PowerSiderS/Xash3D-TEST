@@ -711,10 +711,17 @@ public class XashActivity extends Activity {
 	 */
 	public static void showKeyboard( int show )
 	{
-		// Transfer the task to the main thread as a Runnable
-		mSingleton.runOnUiThread( new ShowTextInputTask( show ) );
-		//if( show == 1 )
-		//	mSurface.getHolder().setSizeFromLayout();
+		if( mSingleton == null )
+			return;
+		try
+		{
+			// Transfer the task to the main thread as a Runnable
+			mSingleton.runOnUiThread( new ShowTextInputTask( show ) );
+		}
+		catch( Throwable t )
+		{
+			Log.e( TAG, "showKeyboard failed", t );
+		}
 	}
 
 	public static void setIcon( String path )

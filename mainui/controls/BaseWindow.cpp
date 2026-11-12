@@ -130,7 +130,6 @@ void CMenuBaseWindow::Draw()
 
 bool CMenuBaseWindow::DrawAnimation()
 {
-	if( TTT_PERIOD <= 0.0f ) return true;
 	float alpha;
 
 	if( eTransitionType == ANIM_IN )

@@ -43,9 +43,6 @@ CMenuPicButton::CMenuPicButton() : BaseClass()
 	iOldState = BUTTON_NOFOCUS;
 	m_iLastFocusTime = -512;
 	bPulse = false;
-#ifdef CS16CLIENT
-	bRollOver = false;
-#endif
 
 	SetSize( UI_BUTTONS_WIDTH, UI_BUTTONS_HEIGHT );
 

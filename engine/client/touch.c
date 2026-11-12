@@ -483,22 +483,6 @@ void Touch_RemoveButtonFromList( touchbuttonlist_t *list, const char *name )
 		Mem_Free( button );
 	}
 
-	if( touch.clientonly )
-	{
-		qboolean has_client = false;
-		for( button = touch.list_user.first; button; button = button->next )
-		{
-			if( button->flags & TOUCH_FL_CLIENT )
-			{
-				has_client = true;
-				break;
-			}
-		}
-		if( !has_client )
-		{
-			Touch_SetClientOnly( false );
-		}
-	}
 }
 
 void Touch_RemoveButton( const char *name )
@@ -1242,23 +1226,6 @@ void Touch_Draw( void )
 {
 	touch_button_t *button;
 
-	if( touch.clientonly )
-	{
-		qboolean has_client = false;
-		for( button = touch.list_user.first; button; button = button->next )
-		{
-			if( button->flags & TOUCH_FL_CLIENT )
-			{
-				has_client = true;
-				break;
-			}
-		}
-		if( !has_client )
-		{
-			Touch_SetClientOnly( false );
-		}
-	}
-
 	if( !touch.initialized || (!touch_enable->integer && !touch.clientonly) )
 		return;
 
@@ -1836,24 +1803,6 @@ int IN_TouchEvent( touchEventType type, int fingerID, float x, float y, float dx
 		// allow scoreboard scroll
 		if( host.mouse_visible && type == event_motion )
 			return 0;
-	}
-
-	if( touch.clientonly )
-	{
-		qboolean has_client = false;
-		touch_button_t *btn;
-		for( btn = touch.list_user.first; btn; btn = btn->next )
-		{
-			if( btn->flags & TOUCH_FL_CLIENT )
-			{
-				has_client = true;
-				break;
-			}
-		}
-		if( !has_client )
-		{
-			Touch_SetClientOnly( false );
-		}
 	}
 
 	if( !touch.initialized || (!touch_enable->integer && !touch.clientonly) )
