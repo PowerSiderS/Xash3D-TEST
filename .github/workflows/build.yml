@@ -30,12 +30,19 @@ jobs:
           yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
           echo "Installing required Android SDK packages & NDK..."
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-29" \
-            "build-tools;28.0.3" \
-            "cmake;3.10.2.4988404" \
-            "ndk;21.4.7075529"
+          for attempt in 1 2 3; do
+            echo "Attempt $attempt..."
+            ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install \
+              "platform-tools" \
+              "platforms;android-29" \
+              "build-tools;28.0.3" \
+              "cmake;3.10.2.4988404" \
+              "ndk;21.4.7075529" && break || {
+                if [ $attempt -eq 3 ]; then exit 1; fi
+                echo "Attempt $attempt failed, retrying in 5s..."
+                sleep 5
+              }
+          done
 
           echo "Setting NDK environment variables..."
           echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/21.4.7075529" >> $GITHUB_ENV
