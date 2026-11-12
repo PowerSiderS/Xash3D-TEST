@@ -155,8 +155,8 @@ void CMenuPicButton::Draw( )
 	if( iOldState == BUTTON_NOFOCUS && state != BUTTON_NOFOCUS )
 		iFocusStartTime = uiStatic.realTime;
 
-#ifndef CS16CLIENT
-	if( szStatusText && iFlags & QMF_NOTIFY )
+#if 0 // CS16Client: no status text drawn next to picbuttons
+	if( szStatusText && (iFlags & QMF_NOTIFY) )
 	{
 		Point coord;
 

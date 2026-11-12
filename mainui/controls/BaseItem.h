@@ -152,8 +152,8 @@ public:
 	inline void SetNameAndStatus( const char *name, const char *status, const char *tag = NULL )
 	{
 		szName = name;
-		//szStatusText = status;
-		//szTag = tag;
+		szStatusText = NULL;
+		szTag = NULL;
 	}
 
 	CMenuItemsHolder* Parent() const			{ return m_pParent; }
@@ -167,9 +167,9 @@ public:
 	Size size;
 	int charSize;
 
-	const char *szName;
-	const char *szStatusText;
-	const char *szTag; // tag for searching in res file
+	const char *szName = "";
+	const char *szStatusText = NULL;
+	const char *szTag = NULL; // tag for searching in res file
 
 	CColor colorBase;
 	CColor colorFocus;

@@ -22,6 +22,9 @@ CMenuBaseItem::CMenuBaseItem
 
 CMenuBaseItem::CMenuBaseItem()
 {
+	szName = "";
+	szStatusText = NULL;
+	szTag = NULL;
 	SetNameAndStatus( "", NULL );
 	SetCharSize( QM_DEFAULTFONT );
 	SetCoord( 0, 0 );
