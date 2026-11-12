@@ -84,7 +84,12 @@ mstudioanim_t *CGameStudioModelRenderer::LookupAnimation(mstudioseqdesc_t *pseqd
 {
 	mstudioanim_t *panim = NULL;
 
+	if (!pseqdesc || !m_pStudioHeader)
+		return NULL;
+
 	panim = StudioGetAnim(m_pRenderModel, pseqdesc);
+	if (!panim)
+		return NULL;
 
 	if (index < 0)
 		return panim;

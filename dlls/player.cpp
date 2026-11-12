@@ -4977,6 +4977,7 @@ void SetScoreAttrib(CBasePlayer *dest, CBasePlayer *src)
 void CBasePlayer::Spawn()
 {
 	int i;
+	m_bVGUIMenus = true;
 
 	m_iGaitsequence = 0;
 

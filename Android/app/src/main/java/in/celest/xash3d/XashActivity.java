@@ -335,10 +335,13 @@ public class XashActivity extends Activity {
 		setenv( "XASH3D_ENGLIBDIR",  enginedir,  true );
 		setenv( "XASH3D_GAMELIBDIR", gamelibdir, true );
 		setenv( "XASH3D_GAMEDIR",    gamedir,    true );
-		setenv( "XASH3D_EXTRAS_PAK1", getFilesDir().getPath() + "/extras.pak", true );
+		File extrasPak1 = new File(getFilesDir(), "extras.pak");
+		if (extrasPak1.exists()) {
+			setenv("XASH3D_EXTRAS_PAK1", extrasPak1.getPath(), true);
+		}
 		
 		String pakfile = intent.getStringExtra( "pakfile" );
-		if( pakfile != null && pakfile != "" )
+		if( pakfile != null && !pakfile.isEmpty() && new File(pakfile).exists() )
 			setenv( "XASH3D_EXTRAS_PAK2", pakfile, true );
 		
 		String[] env = intent.getStringArrayExtra( "env" );

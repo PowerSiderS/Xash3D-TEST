@@ -160,6 +160,8 @@ void CStudioModelRenderer::StudioCalcBoneAdj(float dadt, float *adj, const byte 
 
 void CStudioModelRenderer::StudioCalcBoneQuaterion(int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *adj, float *q)
 {
+	if (!panim || !pbone || !q)
+		return;
 	int j, k;
 	vec4_t q1, q2;
 	vec3_t angle1, angle2;
@@ -239,6 +241,8 @@ void CStudioModelRenderer::StudioCalcBoneQuaterion(int frame, float s, mstudiobo
 
 void CStudioModelRenderer::StudioCalcBonePosition(int frame, float s, mstudiobone_t *pbone, mstudioanim_t *panim, float *adj, float *pos)
 {
+	if (!panim || !pbone || !pos)
+		return;
 	int j, k;
 	mstudioanimvalue_t *panimvalue;
 
@@ -316,10 +320,17 @@ mstudioanim_t *CStudioModelRenderer::StudioGetAnim(model_t *m_pSubModel, mstudio
 	mstudioseqgroup_t *pseqgroup;
 	cache_user_t *paSequences;
 
+	if (!m_pStudioHeader || !pseqdesc)
+		return NULL;
+
 	pseqgroup = (mstudioseqgroup_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqgroupindex) + pseqdesc->seqgroup;
 
 	if (pseqdesc->seqgroup == 0)
+#if defined(XASH_64BIT) || defined(__aarch64__) || defined(_M_ARM64) || defined(__x86_64__) || defined(_M_X64)
+		return (mstudioanim_t *)((byte *)m_pStudioHeader + pseqdesc->animindex);
+#else
 		return (mstudioanim_t *)((byte *)m_pStudioHeader + pseqgroup->data + pseqdesc->animindex);
+#endif
 
 	paSequences = (cache_user_t *)m_pSubModel->submodels;
 
@@ -464,6 +475,8 @@ float CStudioModelRenderer::StudioEstimateInterpolant(void)
 
 void CStudioModelRenderer::StudioCalcRotations(float pos[][3], vec4_t *q, mstudioseqdesc_t *pseqdesc, mstudioanim_t *panim, float f)
 {
+	if (!m_pStudioHeader || !pseqdesc || !panim || !pos || !q)
+		return;
 	int i;
 	int frame;
 	mstudiobone_t *pbone;

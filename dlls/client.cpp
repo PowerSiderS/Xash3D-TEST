@@ -232,7 +232,12 @@ void ShowMenu(CBasePlayer *pPlayer, int bitsValidSlots, int nDisplayTime, BOOL f
 
 void ShowVGUIMenu(CBasePlayer *pPlayer, int MenuType, int BitMask, char *szOldMenu)
 {
-	if ((pPlayer->m_bVGUIMenus && CVAR_GET_FLOAT("touch_enable") != 0.0f) || MenuType > VGUI_Menu_Buy_Item || !szOldMenu)
+	#if defined(__ANDROID__) || defined(XASH_MOBILE_PLATFORM)
+	bool useVGUI = true;
+#else
+	bool useVGUI = (pPlayer && pPlayer->m_bVGUIMenus && CVAR_GET_FLOAT("touch_enable") != 0.0f);
+#endif
+	if (useVGUI || MenuType > VGUI_Menu_Buy_Item || !szOldMenu)
 	{
 		MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->pev);
 		WRITE_BYTE(MenuType);

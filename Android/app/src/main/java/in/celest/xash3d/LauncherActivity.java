@@ -560,7 +560,8 @@ public class LauncherActivity extends Activity
 				} 
 				catch (Exception e) 
 				{
-					Log.w(TAG, "extras.pak not found or extraction skipped: " + e.getMessage());
+					// extras.pak not bundled or skipped
+					Log.d(TAG, "extras.pak extraction skipped");
 				}
 			}
 		}).start();
@@ -632,7 +633,11 @@ public class LauncherActivity extends Activity
 		intent.putExtra("basedir", chosenPath);
 		intent.putExtra("gamedir", "cstrike");
 		intent.putExtra("argv", argv);
-		intent.putExtra("pakfile", getFilesDir().getAbsolutePath() + "/extras.pak");
+		File pakFile = new File(getFilesDir(), "extras.pak");
+		if (pakFile.exists()) 
+		{
+			intent.putExtra("pakfile", pakFile.getAbsolutePath());
+		}
 
 		startActivity(intent);
 	}

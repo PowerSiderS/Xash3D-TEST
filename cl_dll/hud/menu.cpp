@@ -56,6 +56,8 @@ int CHudMenu :: Init( void )
 	HOOK_COMMAND( "showvguimenu", ShowVGUIMenu );
 
 	_extended_menus = CVAR_CREATE("_extended_menus", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("numericalmenu", "1", FCVAR_ARCHIVE);
+	CVAR_CREATE("numericalmenu_clientonly", "1", FCVAR_ARCHIVE);
 
 	InitHUDData();
 

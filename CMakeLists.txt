@@ -59,9 +59,12 @@ option(XASH_DOWNLOAD_DEPENDENCIES "Download dependencies automatically" OFF)
 
 set(SDL2_PATH "${CMAKE_SOURCE_DIR}/SDL2" CACHE PATH "SDL2 path")
 
-if(NOT XASH_64BIT AND CMAKE_SIZEOF_VOID_P EQUAL 8)
-	message(STATUS "Note: Building 64-bit target.")
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(XASH_64BIT ON CACHE BOOL "Enable experimental 64-bit build." FORCE)
+	add_definitions(-DXASH_64BIT=1)
+	message(STATUS "Building for 64-bit target.")
 else()
+	set(XASH_64BIT OFF CACHE BOOL "Enable experimental 64-bit build." FORCE)
 	message(STATUS "Building for 32-bit (x86)")
 endif()
 
