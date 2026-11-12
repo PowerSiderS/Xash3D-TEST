@@ -60,8 +60,22 @@
 
 extern globalvars_t *gpGlobals;
 
-#define STRING(offset)		((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))
-#define MAKE_STRING(str)	((uint64_t)(str) - (uint64_t)(STRING(0)))
+#define STRING(offset)		((const char *)(gpGlobals && gpGlobals->pStringBase ? (gpGlobals->pStringBase + (intptr_t)(int)(offset)) : ""))
+
+static inline string_t MAKE_STRING(const char *str)
+{
+	if (!str || !*str)
+		return 0;
+#if defined(XASH_64BIT) || defined(__aarch64__) || defined(_M_ARM64) || defined(__x86_64__) || defined(_M_X64)
+	if (g_engfuncs.pfnAllocString)
+		return ALLOC_STRING(str);
+	return 0;
+#else
+	if (g_engfuncs.pfnAllocString)
+		return ALLOC_STRING(str);
+	return (string_t)((uintptr_t)str - (uintptr_t)STRING(0));
+#endif
+}
 
 // Dot products for view cone checking
 

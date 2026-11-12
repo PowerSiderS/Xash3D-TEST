@@ -156,7 +156,7 @@ void AddEntityHashValue(entvars_t *pev, const char *value, hash_types_e fieldTyp
 	if (!pev || FStringNull(pev->classname))
 		return;
 
-	if (!value)
+	if (!value || !*value)
 		return;
 
 	if (stringsHashTable.Count() == 0)
@@ -170,14 +170,24 @@ void AddEntityHashValue(entvars_t *pev, const char *value, hash_types_e fieldTyp
 	pevIndex = ENTINDEX(ENT(pev));
 	item = &stringsHashTable[hash];
 
-	while (item->pev)
+	int attempts = 0;
+	while (item->pev && attempts < count)
 	{
-		if (!Q_strcmp(STRING(item->pev->classname), STRING(pev->classname)))
-			break;
+		if (item->pev == pev)
+			return;
+
+		if (!FStringNull(item->pev->classname))
+		{
+			const char *className = STRING(item->pev->classname);
+			if (className && !Q_strcmp(className, value))
+				break;
+		}
 
 		hash = (hash + 1) % count;
 		item = &stringsHashTable[hash];
+		attempts++;
 	}
+
 	if (item->pev)
 	{
 		next = item->next;
@@ -236,7 +246,7 @@ void RemoveEntityHashValue(entvars_t *pev, const char *value, hash_types_e field
 	if (fieldType != CLASSNAME)
 		return;
 
-	if (!pev || !value)
+	if (!pev || !value || !*value)
 		return;
 
 	if (stringsHashTable.Count() == 0)
@@ -252,14 +262,21 @@ void RemoveEntityHashValue(entvars_t *pev, const char *value, hash_types_e field
 	hash = hash % count;
 	item = &stringsHashTable[hash];
 
-	while (item->pev)
+	int attempts = 0;
+	while (item->pev && attempts < count)
 	{
-		if (!Q_strcmp(STRING(item->pev->classname), STRING(pev->classname)))
-			break;
+		if (!FStringNull(item->pev->classname))
+		{
+			const char *className = STRING(item->pev->classname);
+			if (className && !Q_strcmp(className, value))
+				break;
+		}
 
 		hash = (hash + 1) % count;
 		item = &stringsHashTable[hash];
+		attempts++;
 	}
+
 	if (item->pev)
 	{
 		last = item;
@@ -273,20 +290,20 @@ void RemoveEntityHashValue(entvars_t *pev, const char *value, hash_types_e field
 		}
 		if (item->pev == pev)
 		{
-			if (last == item)
+			if (item == &stringsHashTable[hash])
 			{
+				item->pev = NULL;
+				item->lastHash = NULL;
+				item->pevIndex = 0;
+
 				if (item->next)
 				{
-					item->pev = item->next->pev;
-					item->pevIndex = item->next->pevIndex;
-					item->lastHash = NULL;
-					item->next = item->next->next;
-				}
-				else
-				{
-					item->pev = NULL;
-					item->lastHash = NULL;
-					item->pevIndex = 0;
+				hash_item_t *next = item->next;
+				item->pev = next->pev;
+				item->pevIndex = next->pevIndex;
+				item->lastHash = next->lastHash;
+				item->next = next->next;
+				hashItemMemPool.Free(next);
 				}
 			}
 			else

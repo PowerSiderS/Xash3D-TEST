@@ -584,6 +584,12 @@ public class LauncherActivity extends Activity
 
 		String argv = editTextCmdArgs.getText().toString().trim();
 
+		// Always ensure -log is present directly without needing an option
+		if (!argv.contains("-log")) 
+		{
+			argv = argv.isEmpty() ? "-log" : argv + " -log";
+		}
+
 		// Bot configuration
 		if (checkBoxZBot.isChecked()) 
 		{

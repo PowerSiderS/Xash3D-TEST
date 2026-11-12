@@ -829,7 +829,7 @@ void Con_Init( void )
 	con_fontsize = Cvar_Get( "con_fontsize", "1", CVAR_ARCHIVE, "chat or client font number (0, 1 or 2)" );
 	con_maxfrac = Cvar_Get( "con_maxfrac", DEFAULT_CON_MAXFRAC, CVAR_ARCHIVE, "console max height" );
 	con_halffrac = Cvar_Get( "con_halffrac", "0.5", CVAR_ARCHIVE, "console half height" );
-	con_charset = Cvar_Get( "con_charset", "cp1251", CVAR_ARCHIVE, "console font charset (only cp1251 supported now)" );
+	con_charset = Cvar_Get( "con_charset", "cp1252", CVAR_ARCHIVE, "console font charset (cp1252, cp1251, or utf-8)" );
 	con_alpha = Cvar_Get( "con_alpha", "1.0", CVAR_ARCHIVE, "console alpha value" );
 	con_black = Cvar_Get( "con_black", "0", CVAR_ARCHIVE, "make console black like a nigga" );
 	con_fontscale = Cvar_Get( "con_fontscale", "1.0", CVAR_ARCHIVE, "scale font texture" );
@@ -1979,7 +1979,7 @@ void Con_RunConsole( void )
 		g_codepage = 0;
 		if( !Q_stricmp( con_charset->string, "cp1251" ) )
 			g_codepage = 1251;
-		else if( !Q_stricmp( con_charset->string, "cp1252" ) )
+		else if( !Q_stricmp( con_charset->string, "cp1252" ) || !Q_stricmp( con_charset->string, "utf-8" ) )
 			g_codepage = 1252;
 
 		g_utf8 = !Q_stricmp( cl_charset->string, "utf-8" );

@@ -30,19 +30,13 @@
 
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent);
 extern globalvars_t *gpGlobals;
-#define STRING(offset) reinterpret_cast<const char *>(gpGlobals->pStringBase + (uintp)offset)
-#if !defined __aarch64__ || defined(CLIENT_DLL)
-#define MAKE_STRING(str)	((int)(long int)str - (int)(long int)STRING(0))
-#else
+#define STRING(offset) reinterpret_cast<const char *>(gpGlobals && gpGlobals->pStringBase ? (gpGlobals->pStringBase + (intptr_t)(int)(offset)) : "")
 static inline int MAKE_STRING(const char *szValue)
 {
-	long long ptrdiff = szValue - STRING(0);
-	if( ptrdiff > INT_MAX || ptrdiff < INT_MIN )
-		return ALLOC_STRING( szValue );
-	else
-		return (int)ptrdiff;
+	if (!szValue || !*szValue) return 0;
+	if (g_engfuncs.pfnAllocString) return ALLOC_STRING(szValue);
+	return (int)((uintptr_t)szValue - (uintptr_t)STRING(0));
 }
-#endif
 inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName)
 {
 	return FIND_ENTITY_BY_STRING(entStart, "classname", pszName);
