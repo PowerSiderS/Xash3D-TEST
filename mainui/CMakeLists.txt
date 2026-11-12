@@ -20,8 +20,8 @@
 # SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 3.0.0)
-project (MAINUI)
+cmake_minimum_required(VERSION 3.10)
+project (MAINUI C CXX)
 
 include(FWGSLib)
 
