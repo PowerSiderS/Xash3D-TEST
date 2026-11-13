@@ -75,6 +75,11 @@ void CHudMenu :: Reset( void )
 {
 	g_szPrelocalisedMenuString[0] = 0;
 	m_fWaitingForMore = FALSE;
+	m_fMenuDisplayed = 0;
+	m_bitsValidSlots = 0;
+	m_iFlags &= ~HUD_DRAW;
+	gMobileAPI.pfnTouchRemoveButton( "_menu_*" );
+	ClientCmd( (char *)"touch_setclientonly 0" );
 }
 
 int CHudMenu :: VidInit( void )
@@ -142,6 +147,8 @@ void CHudMenu :: SelectMenuItem( int menu_item )
 		// remove the menu
 		m_fMenuDisplayed = 0;
 		m_iFlags &= ~HUD_DRAW;
+		gMobileAPI.pfnTouchRemoveButton( "_menu_*" );
+		ClientCmd( (char *)"touch_setclientonly 0" );
 	}
 }
 
@@ -172,7 +179,7 @@ int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 	{
 		m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
 		m_iFlags &= ~HUD_DRAW;
-		ClientCmd((char *)"touch_removebutton _menu_*");
+		ClientCmd((char *)"touch_removebutton _menu_*; touch_setclientonly 0");
 		return 1;
 	}
 
@@ -246,7 +253,6 @@ int CHudMenu::MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
 int CHudMenu::MsgFunc_BuyClose(const char *pszName, int iSize, void *pbuf)
 {
 	UserCmd_OldStyleMenuClose();
-	gMobileAPI.pfnTouchRemoveButton("_menu_*");
 	return 1;
 }
 
@@ -270,6 +276,7 @@ void CHudMenu::UserCmd_OldStyleMenuClose()
 	m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
 	m_iFlags &= ~HUD_DRAW;
 	gMobileAPI.pfnTouchRemoveButton("_menu_*");
+	ClientCmd((char *)"touch_setclientonly 0");
 }
 
 // lol, no real VGUI here
@@ -278,6 +285,7 @@ void CHudMenu::UserCmd_OldStyleMenuClose()
 void CHudMenu::ShowVGUIMenu( int menuType )
 {
 	const char *szCmd;
+	int bMenuDisplayed = 0;
 
 	switch(menuType)
 	{
@@ -325,26 +333,31 @@ void CHudMenu::ShowVGUIMenu( int menuType )
 		break;
 	case MENU_RADIOA:
 		szCmd = "exec touch/radioa.cfg";
+		bMenuDisplayed = 1;
 		break;
 	case MENU_RADIOB:
 		szCmd = "exec touch/radiob.cfg";
+		bMenuDisplayed = 1;
 		break;
 	case MENU_RADIOC:
 		szCmd = "exec touch/radioc.cfg";
+		bMenuDisplayed = 1;
 		break;
 	case MENU_RADIOSELECTOR:
 		szCmd = "exec touch/radioselector.cfg";
 		break;
 	case MENU_NUMERICAL_MENU:
 		szCmd = "exec touch/numerical_menu.cfg";
+		bMenuDisplayed = 1;
 		break;
 	default:
-		szCmd = "touch_removebutton _menu_*"; // back to the default touch page
-		m_fMenuDisplayed = 0;
+		szCmd = "touch_removebutton _menu_*; touch_setclientonly 0"; // back to the default touch page
 		break;
 	}
 
-	m_fMenuDisplayed = 1;
+	m_fMenuDisplayed = bMenuDisplayed;
+	if( !bMenuDisplayed )
+		m_iFlags &= ~HUD_DRAW;
 	ClientCmd((char *)szCmd);
 }
 

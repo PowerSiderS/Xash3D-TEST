@@ -11,7 +11,6 @@
     <string name="status_not_found">&#x26A0; Neither cstrike nor valve found in this path</string>
     <string name="perm_desc">Storage permission is required so CS16Client can access your game files (cstrike and valve folders).</string>
     <string name="grant_permission">Grant Storage Permission</string>
-    <string name="enable_zbot">Enable ZBot bots</string>
     <string name="enable_yapb">Enable YaPB bots</string>
     <string name="launch_game">LAUNCH CS 1.6</string>
 

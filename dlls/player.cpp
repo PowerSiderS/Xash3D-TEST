@@ -1686,11 +1686,15 @@ void BuyZoneIcon_Clear(CBasePlayer *player)
 		if (player->m_iMenu <= Menu_BuyItem)
 		{
 			CLIENT_COMMAND(ENT(player->pev), "slot10\n");
+			MESSAGE_BEGIN(MSG_ONE, gmsgBuyClose, NULL, player->pev);
+			MESSAGE_END();
+			player->m_iMenu = Menu_OFF;
 		}
 		else if (player->m_iMenu == Menu_ClientBuy)
 		{
 			MESSAGE_BEGIN(MSG_ONE, gmsgBuyClose, NULL, player->pev);
 			MESSAGE_END();
+			player->m_iMenu = Menu_OFF;
 		}
 	}
 }
@@ -1739,11 +1743,15 @@ void RescueZoneIcon_Clear(CBasePlayer *player)
 		if (player->m_iMenu <= Menu_BuyItem)
 		{
 			CLIENT_COMMAND(ENT(player->pev), "slot10\n");
+			MESSAGE_BEGIN(MSG_ONE, gmsgBuyClose, NULL, player->pev);
+			MESSAGE_END();
+			player->m_iMenu = Menu_OFF;
 		}
 		else if (player->m_iMenu == Menu_ClientBuy)
 		{
 			MESSAGE_BEGIN(MSG_ONE, gmsgBuyClose, NULL, player->pev);
 			MESSAGE_END();
+			player->m_iMenu = Menu_OFF;
 		}
 	}
 }

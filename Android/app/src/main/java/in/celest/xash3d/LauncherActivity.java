@@ -45,7 +45,7 @@ import java.lang.reflect.Method;
 public class LauncherActivity extends Activity 
 {
 	public static final String TAG = "LauncherActivity";
-	public static final int PAK_VERSION = 8;
+	public static final int PAK_VERSION = 9;
 	private static final int REQUEST_STORAGE_PERMISSION = 1001;
 	private static final int REQUEST_FOLDER_PICK = 1002;
 
@@ -57,7 +57,6 @@ public class LauncherActivity extends Activity
 	private Button buttonGrantPermission;
 	private Button buttonSelectFolder;
 	private Button buttonDefaultPath;
-	private CheckBox checkBoxZBot;
 	private CheckBox checkBoxYaPB;
 	private CheckBox checkBoxImmersive;
 	private CheckBox checkBoxResize;
@@ -101,7 +100,6 @@ public class LauncherActivity extends Activity
 		buttonGrantPermission = findViewById(R.id.button_grant_permission);
 		buttonSelectFolder = findViewById(R.id.button_select_folder);
 		buttonDefaultPath = findViewById(R.id.button_default_path);
-		checkBoxZBot = findViewById(R.id.use_zbot);
 		checkBoxYaPB = findViewById(R.id.use_yapb);
 		checkBoxImmersive = findViewById(R.id.immersive_mode);
 		checkBoxResize = findViewById(R.id.enableResizeWorkaround);
@@ -126,17 +124,16 @@ public class LauncherActivity extends Activity
 		String savedPath = mPref.getString("basedir", defaultPath);
 		editTextPath.setText(savedPath);
 
-		checkBoxZBot.setChecked(mPref.getBoolean("zbots", true));
 		checkBoxYaPB.setChecked(mPref.getBoolean("yapbs", false));
 		checkBoxImmersive.setChecked(mPref.getBoolean("immersive_mode", true));
 		checkBoxResize.setChecked(mPref.getBoolean("enableResizeWorkaround", true));
 		String savedArgv = mPref.getString("argv", "-console");
-		if (savedArgv != null && savedArgv.contains("-log")) 
+		String cleanedArgv = sanitizeCommandArgs(savedArgv);
+		if (!cleanedArgv.equals(savedArgv)) 
 		{
-			savedArgv = savedArgv.replaceAll("(?i)\\s*-log\\b", "").trim();
-			mPref.edit().putString("argv", savedArgv).apply();
+			mPref.edit().putString("argv", cleanedArgv).apply();
 		}
-		editTextCmdArgs.setText(savedArgv);
+		editTextCmdArgs.setText(cleanedArgv);
 
 		checkBoxVolume.setChecked(mPref.getBoolean("usevolume", true));
 
@@ -573,6 +570,15 @@ public class LauncherActivity extends Activity
 		}).start();
 	}
 
+	private static String sanitizeCommandArgs(String args)
+	{
+		if (args == null)
+		{
+			return "";
+		}
+		return args.replaceAll("(?i)(?:^|\\s+)-(?:log|bots?)(?=\\s|$)", " ").trim().replaceAll("\\s+", " ");
+	}
+
 	public void startXash(View view) 
 	{
 		String chosenPath = editTextPath.getText().toString().trim();
@@ -589,20 +595,11 @@ public class LauncherActivity extends Activity
 			return;
 		}
 
-		String argv = editTextCmdArgs.getText().toString().trim();
-		if (argv.contains("-log")) 
+		String rawArgv = editTextCmdArgs.getText().toString();
+		String argv = sanitizeCommandArgs(rawArgv);
+		if (!argv.equals(rawArgv.trim())) 
 		{
-			argv = argv.replaceAll("(?i)\\s*-log\\b", "").trim();
 			editTextCmdArgs.setText(argv);
-		}
-
-		// Bot configuration
-		if (checkBoxZBot.isChecked()) 
-		{
-			if (!argv.contains("-bots")) 
-			{
-				argv = argv.isEmpty() ? "-bots" : argv + " -bots";
-			}
 		}
 
 		if (checkBoxYaPB.isChecked()) 
@@ -619,7 +616,7 @@ public class LauncherActivity extends Activity
 		SharedPreferences.Editor editor = mPref.edit();
 		editor.putString("basedir", chosenPath);
 		editor.putString("argv", argv);
-		editor.putBoolean("zbots", checkBoxZBot.isChecked());
+		editor.remove("zbots");
 		editor.putBoolean("yapbs", checkBoxYaPB.isChecked());
 		editor.putBoolean("immersive_mode", checkBoxImmersive.isChecked());
 		editor.putBoolean("enableResizeWorkaround", checkBoxResize.isChecked());

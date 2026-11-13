@@ -209,10 +209,50 @@ public class XashActivity extends Activity {
 		
 		super.onWindowFocusChanged( hasFocus );
 
+		if( hasFocus && mSurface != null && !keyboardVisible )
+		{
+			mSurface.requestFocus();
+		}
+
 		if( mImmersiveMode != null )
 		{
 			mImmersiveMode.apply();
 		}
+	}
+
+	@Override
+	public boolean onKeyDown( int keyCode, KeyEvent event )
+	{
+		if( keyCode == KeyEvent.KEYCODE_BACK )
+		{
+			return handleKey( keyCode, event );
+		}
+		return super.onKeyDown( keyCode, event );
+	}
+
+	@Override
+	public boolean onKeyUp( int keyCode, KeyEvent event )
+	{
+		if( keyCode == KeyEvent.KEYCODE_BACK )
+		{
+			return handleKey( keyCode, event );
+		}
+		return super.onKeyUp( keyCode, event );
+	}
+
+	@Override
+	public void onBackPressed()
+	{
+		// Forward Android Back/navigation gesture to the engine menu instead of finishing the Activity
+		if( !mEngineReady )
+			return;
+		if( keyboardVisible )
+		{
+			showKeyboard( 0 );
+			return;
+		}
+		nativeKey( 1, KeyEvent.KEYCODE_BACK );
+		nativeKey( 0, KeyEvent.KEYCODE_BACK );
 	}
 	
 	private void launchSurfaceAndEngine()
@@ -298,10 +338,11 @@ public class XashActivity extends Activity {
 		final String enginedir = getFilesDir().getParentFile().getPath() + "/lib";
 				
 		String argv       = FWGSLib.getStringExtraFromIntent( intent, "argv", mPref.getString( "argv", "-console" ) );
-		if( argv != null && argv.contains( "-log" ) )
+		if( argv == null )
 		{
-			argv = argv.replaceAll( "(?i)\\s*-log\\b", "" ).trim();
+			argv = "";
 		}
+		argv = argv.replaceAll( "(?i)(?:^|\\s+)-(?:log|bots?)(?=\\s|$)", " " ).trim().replaceAll( "\\s+", " " );
 		String gamelibdir = FWGSLib.getStringExtraFromIntent( intent, "gamelibdir", enginedir );
 		String gamedir    = FWGSLib.getStringExtraFromIntent( intent, "gamedir", "cstrike" );
 		String basedir    = FWGSLib.getStringExtraFromIntent( intent, "basedir", mPref.getString( "basedir", FWGSLib.getDefaultXashPath(this) ) );
@@ -331,7 +372,7 @@ public class XashActivity extends Activity {
 			Log.e( TAG, "GDBSafe mode enabled!" );
 		}			
 		
-		mArgv = argv.split( " " );
+		mArgv = argv.isEmpty() ? new String[0] : argv.split( "\\s+" );
 
 		// TODO(MoeMod) : bundle res
 		//setenv( "XASH3D_RODIR",   assetsdir,   true );
@@ -700,6 +741,8 @@ public class XashActivity extends Activity {
 				mTextEdit.setVisibility( View.GONE );
 				imm.hideSoftInputFromWindow( mTextEdit.getWindowToken(), 0 );
 				keyboardVisible = false;
+				if( XashActivity.mSurface != null )
+					XashActivity.mSurface.requestFocus();
 				if( XashActivity.mImmersiveMode != null )
 					XashActivity.mImmersiveMode.apply();
 			}
@@ -1234,7 +1277,7 @@ class EngineSurface extends SurfaceView implements SurfaceHolder.Callback, View.
 	public boolean onKeyPreIme( int keyCode, KeyEvent event )
 	{
 		Log.v( TAG, "PreIme: " + keyCode );
-		return super.dispatchKeyEvent( event );
+		return super.onKeyPreIme( keyCode, event );
 	}
 
 }

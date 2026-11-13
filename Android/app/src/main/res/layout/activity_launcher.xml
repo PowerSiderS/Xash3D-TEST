@@ -210,20 +210,10 @@
                     android:textStyle="bold" />
 
                 <CheckBox
-                    android:id="@+id/use_zbot"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:checked="true"
-                    android:text="Enable ZBot bots (-bots)"
-                    android:textColor="#ffffff"
-                    android:textSize="14sp" />
-
-                <CheckBox
                     android:id="@+id/use_yapb"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="8dp"
                     android:text="Enable YaPB bots (requires libyapb)"
                     android:textColor="#ffffff"
                     android:textSize="14sp" />
