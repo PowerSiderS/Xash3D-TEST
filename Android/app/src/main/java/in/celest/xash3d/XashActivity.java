@@ -349,22 +349,12 @@ public class XashActivity extends Activity {
 		//String assetsdir  = "file:///android_asset/";
 		String gdbsafe    = intent.getStringExtra( "gdbsafe" );
 
-		/*bIsCstrike = ( gamedir.equals("cstrike") || gamedir.equals("czero") || gamedir.equals("czeror") );
-		
+		bIsCstrike = ( gamedir.equals("cstrike") || gamedir.equals("czero") || gamedir.equals("czeror") );
 		if( bIsCstrike )
 		{
 			mMinWidth = 640;
 			mMinHeight = 480;
-			
-			final String allowed = "in.celest.xash3d.cs16client";
-			
-			if( !FWGSLib.checkGameLibDir( gamelibdir, allowed ) || 
-				CertCheck.dumbCertificateCheck( getContext(), allowed, null, true ) )
-			{
-				finish();
-				return false;
-			}
-		}*/
+		}
 		
 		if( gdbsafe != null || Debug.isDebuggerConnected() )
 		{
@@ -386,7 +376,7 @@ public class XashActivity extends Activity {
 		}
 		
 		String pakfile = intent.getStringExtra( "pakfile" );
-		if( pakfile != null && !pakfile.isEmpty() && new File(pakfile).exists() )
+		if( pakfile != null && !pakfile.isEmpty() && new File(pakfile).exists() && !pakfile.equals(extrasPak1.getPath()) )
 			setenv( "XASH3D_EXTRAS_PAK2", pakfile, true );
 		
 		String[] env = intent.getStringArrayExtra( "env" );
@@ -1242,17 +1232,24 @@ class EngineSurface extends SurfaceView implements SurfaceHolder.Callback, View.
 	
 	public void toggleEGL( int toggle )
 	{
-	   if( toggle != 0 )
-	   {
-			mEGLSurface = mEGL.eglCreateWindowSurface( mEGLDisplay, mEGLConfig, this, null );
-			mEGL.eglMakeCurrent( mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext );
-	   }
-	   else
-	   {
+		if( mEGL == null || mEGLDisplay == null )
+			return;
+		if( toggle != 0 )
+		{
+			if( mEGLSurface == null )
+				mEGLSurface = mEGL.eglCreateWindowSurface( mEGLDisplay, mEGLConfig, this, null );
+			if( mEGLSurface != null )
+				mEGL.eglMakeCurrent( mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext );
+		}
+		else
+		{
 			mEGL.eglMakeCurrent( mEGLDisplay, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT );
-			mEGL.eglDestroySurface( mEGLDisplay, mEGLSurface );
-			mEGLSurface = null;
-	   }
+			if( mEGLSurface != null )
+			{
+				mEGL.eglDestroySurface( mEGLDisplay, mEGLSurface );
+				mEGLSurface = null;
+			}
+		}
 	}
 	
 	public void ShutdownGL()

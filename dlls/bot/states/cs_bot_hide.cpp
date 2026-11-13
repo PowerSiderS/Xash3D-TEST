@@ -163,6 +163,13 @@ void HideState::OnUpdate(CCSBot *me)
 				// TERRORIST
 				else
 				{
+					// if the bomb is planted and we aren't guarding it yet (e.g. hiding in CT site / wrong zone), replan to guard it
+					if (me->IsDoingScenario() && ctrl->IsBombPlanted() && me->GetTask() != CCSBot::GUARD_TICKING_BOMB)
+					{
+						me->Idle();
+						return;
+					}
+
 					// if we are near the ticking bomb and someone starts defusing it, attack!
 					if (ctrl->GetBombDefuser())
 					{
@@ -222,9 +229,10 @@ void HideState::OnUpdate(CCSBot *me)
 		bool isSettledInSniper = (me->IsSniper() && m_isAtSpot) ? true : false;
 
 		// only investigate noises if we are initiating attacks, and we aren't a "settled in" sniper
-		// dont investigate noises if we are reloading
+		// dont investigate noises if we are reloading or guarding the planted bomb
 		if (!me->IsActiveWeaponReloading() &&
 			!isSettledInSniper &&
+			!(me->GetTask() == CCSBot::GUARD_TICKING_BOMB && ctrl->IsBombPlanted()) &&
 			me->GetDisposition() == CCSBot::ENGAGE_AND_INVESTIGATE)
 		{
 			// if we are holding position, and have heard the enemy nearby, investigate after our hold time is up
@@ -346,8 +354,6 @@ void HideState::OnUpdate(CCSBot *me)
 		float dist = toSpot.Length();
 
 		const float crouchDist = 200.0f;
-		if (dist < crouchDist)
-			me->Crouch();
 
 		const float atDist = 20.0f;
 		if (dist < atDist)
@@ -409,13 +415,17 @@ void HideState::OnUpdate(CCSBot *me)
 			}
 
 			// build a path to our new hiding spot
-			if (me->ComputePath(TheNavAreaGrid.GetNavArea(&m_hidingSpot), &m_hidingSpot, FASTEST_ROUTE) == false)
+			if (me->ComputePath(TheNavAreaGrid.GetNearestNavArea(&m_hidingSpot), &m_hidingSpot, FASTEST_ROUTE) == false)
 			{
 				me->PrintIfWatched("Can't pathfind to hiding spot\n");
 				me->Idle();
 				return;
 			}
 		}
+
+		// crouch as we approach after UpdatePathMovement so normal-area StandUp() does not immediately cancel it
+		if (dist < crouchDist)
+			me->Crouch();
 	}
 }
 

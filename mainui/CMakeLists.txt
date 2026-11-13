@@ -125,13 +125,6 @@ set(MINIUTL_SOURCES
 
 if(CS16CLIENT)
 	add_definitions(-DCS16CLIENT)
-	list(APPEND MAINUI_SOURCES
-		${XASH_SDK}/common/interface.cpp
-		menus/Scoreboard.cpp
-		menus/client/JoinGame.cpp
-		menus/client/JoinClass.cpp
-		menus/client/ClientWindow.cpp
-		)
 endif()
 
 list(APPEND MAINUI_SOURCES ${MAINUI_CONTROLS_SOURCES})
@@ -156,9 +149,8 @@ if(MAINUI_FONT_SCALE)
 	add_definitions(-DMAINUI_FONT_SCALE)
 endif()
 
-# Force stb_truetype for Apple devices, as there is no Apple native font renderer
-# And freetype&fontconfig isn't used on this platform by default
-if(APPLE)
+# Force stb_truetype for Apple and Android devices, as there is no native fontconfig/freetype renderer
+if(APPLE OR ANDROID)
 	set(MAINUI_USE_STB TRUE)
 endif()
 
@@ -199,7 +191,6 @@ elseif(WIN32)
 	set_target_properties(${MAINUI_LIBRARY} PROPERTIES
 		OUTPUT_NAME menu PREFIX "")
 elseif(ANDROID)
-	set(MAINUI_USE_STB TRUE)
 	set_target_properties(${MAINUI_LIBRARY} PROPERTIES
 		OUTPUT_NAME menu)
 endif()

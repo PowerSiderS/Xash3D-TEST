@@ -57,12 +57,12 @@ void HuntState::OnUpdate(CCSBot *me)
 				return;
 			}
 
-			// if bomb has been planted, and we hear it, move to a hiding spot near the bomb and watch it
+			// if bomb has been planted, move to a hiding spot near the bomb and watch it
 			const Vector *bombPos = me->GetGameState()->GetBombPosition();
-			if (!me->IsRogue() && me->GetGameState()->IsBombPlanted() && bombPos != NULL)
+			if (me->GetGameState()->IsBombPlanted() && bombPos != NULL)
 			{
 				me->SetTask(CCSBot::GUARD_TICKING_BOMB);
-				me->Hide(TheNavAreaGrid.GetNavArea(bombPos));
+				me->Hide(TheNavAreaGrid.GetNearestNavArea(bombPos), -1.0f, 750.0f, true);
 				return;
 			}
 		}

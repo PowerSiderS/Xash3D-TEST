@@ -294,15 +294,7 @@ void Android_RunEvents()
 			break;
 
 		case event_resize:
-			// reinitialize EGL and change engine screen size
-			if( host.state == HOST_NORMAL && ( scr_width->integer != jni.width || scr_height->integer != jni.height ) )
-			{
-				(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 0 );
-				(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 1 );
-				Android_UpdateSurface();
-				Android_SwapInterval( gl_swapInterval->integer );
-				VID_SetMode();
-			}
+			// handled below once host.state == HOST_FRAME so resizes during HOST_INIT are not lost
 			break;
 		case event_joyadd:
 			Joy_AddEvent( events.queue[i].arg );
@@ -373,6 +365,16 @@ void Android_RunEvents()
 	}
 
 	events.count = 0; // no more events
+
+	if( host.state == HOST_FRAME && scr_width && scr_height && jni.width > 0 && jni.height > 0 && ( scr_width->integer != jni.width || scr_height->integer != jni.height ) )
+	{
+		(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 0 );
+		(*jni.env)->CallStaticVoidMethod( jni.env, jni.actcls, jni.toggleEGL, 1 );
+		Android_UpdateSurface();
+		Android_SwapInterval( gl_swapInterval->integer );
+		VID_SetMode();
+		SCR_VidInit();
+	}
 
 	// text input handled separately to allow unicode symbols
 	for( i = 0; events.inputtext[i]; i++ )

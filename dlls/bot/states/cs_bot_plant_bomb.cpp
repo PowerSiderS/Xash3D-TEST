@@ -37,7 +37,7 @@ void PlantBombState::OnUpdate(CCSBot *me)
 	{
 		// move to a hiding spot and watch the bomb
 		me->SetTask(CCSBot::GUARD_TICKING_BOMB);
-		me->Hide();
+		me->Hide(me->GetLastKnownArea(), -1.0f, 750.0f, true);
 	}
 
 	// if we time out, it's because we slipped into a non-plantable area

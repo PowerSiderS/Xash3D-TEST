@@ -73,6 +73,15 @@ void __CmdFunc_InputCommandSpecial()
 #endif
 }
 
+#ifdef _CS16CLIENT_ALLOW_SPECIAL_SCRIPTING
+// Fallback no-op so triggering "special" without an active "_special" alias
+// does not forward "_special" to the server and spam "Unknown command: _special".
+// User-defined "alias _special ..." still runs first in Cmd_ExecuteString.
+void __CmdFunc_InputCommandSpecialStub()
+{
+}
+#endif
+
 #define XASH_GENERATE_BUILDNUM
 
 #if defined(XASH_GENERATE_BUILDNUM)
@@ -139,6 +148,9 @@ void __CmdFunc_MouseSucksClose( void ) { evdev_open = false; }
 void CHud :: Init( void )
 {
 	HOOK_COMMAND( "special", InputCommandSpecial );
+#ifdef _CS16CLIENT_ALLOW_SPECIAL_SCRIPTING
+	HOOK_COMMAND( "_special", InputCommandSpecialStub );
+#endif
 
 #ifdef __ANDROID__
 	HOOK_COMMAND( "evdev_mouseopen", MouseSucksOpen );

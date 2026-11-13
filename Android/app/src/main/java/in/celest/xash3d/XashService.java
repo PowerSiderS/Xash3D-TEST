@@ -79,7 +79,8 @@ public class XashService extends Service
 		engineIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		
 		Intent exitIntent = new Intent(this, exitButtonListener.class);
-		final PendingIntent pendingExitIntent = PendingIntent.getBroadcast(this, 0, exitIntent, 0);
+		int piFlags = android.os.Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0;
+		final PendingIntent pendingExitIntent = PendingIntent.getBroadcast(this, 0, exitIntent, piFlags);
 
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
 		{
@@ -103,7 +104,7 @@ public class XashService extends Service
 		notification.contentView.setTextViewText(status_text, "CS16Client");
 		notification.contentView.setOnClickPendingIntent(status_exit_button, pendingExitIntent);
 
-		notification.contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, engineIntent, 0);
+		notification.contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, engineIntent, piFlags);
 		notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE;
 		
 		startForeground(100, notification);
@@ -121,6 +122,7 @@ public class XashService extends Service
 	@Override
 	public void onCreate()
 	{
+		super.onCreate();
 	}
 
 	@Override

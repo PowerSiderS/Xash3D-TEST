@@ -213,6 +213,11 @@ void CCSBot::OnEvent(GameEventType event, CBaseEntity *entity, CBaseEntity *othe
 			{
 				Idle();
 			}
+			else if (m_iTeam == TERRORIST && IsDoingScenario() && m_state != &m_plantBombState && !IsAttacking() && !IsEscapingFromBomb() && GetTask() != GUARD_TICKING_BOMB)
+			{
+				// redirect T bots away from CT site / other zones back to defend the planted bomb
+				Idle();
+			}
 
 			// if we are following someone, stop following
 			if (IsFollowing())

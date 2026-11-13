@@ -65,6 +65,7 @@ public class LauncherActivity extends Activity
 	private LinearLayout layoutAdvanced;
 	private CheckBox checkBoxVolume;
 	private Spinner spinnerPixelFormat;
+	private Thread mExtractThread;
 
 	// Resolution settings
 	private CheckBox checkBoxResolution;
@@ -530,44 +531,71 @@ public class LauncherActivity extends Activity
 	 * Extract extras.pak from assets to internal storage so the game engine loads
 	 * touch buttons, presets, and configs.
 	 */
+	private synchronized void extractAssetsSync()
+	{
+		File pakFile = new File(getFilesDir(), "extras.pak");
+		File tmpFile = new File(getFilesDir(), "extras.pak.tmp");
+		int currentVersion = mPref.getInt("pakversion", 0);
+
+		if (pakFile.exists() && currentVersion == PAK_VERSION)
+		{
+			return;
+		}
+
+		InputStream is = null;
+		OutputStream os = null;
+		try
+		{
+			Log.i(TAG, "Extracting extras.pak from assets...");
+			is = getAssets().open("extras.pak");
+			os = new FileOutputStream(tmpFile);
+			byte[] buf = new byte[8192];
+			int len;
+			while ((len = is.read(buf)) > 0)
+			{
+				os.write(buf, 0, len);
+			}
+			os.flush();
+			os.close();
+			os = null;
+			is.close();
+			is = null;
+
+			if (!tmpFile.renameTo(pakFile))
+			{
+				throw new java.io.IOException("Failed to rename extras.pak.tmp");
+			}
+
+			mPref.edit().putInt("pakversion", PAK_VERSION).commit();
+			Log.i(TAG, "extras.pak extraction completed.");
+		}
+		catch (Exception e)
+		{
+			// extras.pak not bundled or skipped
+			if (tmpFile.exists())
+			{
+				tmpFile.delete();
+			}
+			Log.d(TAG, "extras.pak extraction skipped", e);
+		}
+		finally
+		{
+			try { if (os != null) os.close(); } catch (Exception ignored) {}
+			try { if (is != null) is.close(); } catch (Exception ignored) {}
+		}
+	}
+
 	private void extractAssetsIfNeeded() 
 	{
-		new Thread(new Runnable() 
+		mExtractThread = new Thread(new Runnable() 
 		{
 			@Override
 			public void run() 
 			{
-				try 
-				{
-					File pakFile = new File(getFilesDir(), "extras.pak");
-					int currentVersion = mPref.getInt("pakversion", 0);
-
-					if (!pakFile.exists() || currentVersion != PAK_VERSION) 
-					{
-						Log.i(TAG, "Extracting extras.pak from assets...");
-						InputStream is = getAssets().open("extras.pak");
-						OutputStream os = new FileOutputStream(pakFile);
-						byte[] buf = new byte[8192];
-						int len;
-						while ((len = is.read(buf)) > 0) 
-						{
-							os.write(buf, 0, len);
-						}
-						os.flush();
-						os.close();
-						is.close();
-
-						mPref.edit().putInt("pakversion", PAK_VERSION).apply();
-						Log.i(TAG, "extras.pak extraction completed.");
-					}
-				} 
-				catch (Exception e) 
-				{
-					// extras.pak not bundled or skipped
-					Log.d(TAG, "extras.pak extraction skipped");
-				}
+				extractAssetsSync();
 			}
-		}).start();
+		}, "ExtractAssetsThread");
+		mExtractThread.start();
 	}
 
 	private static String sanitizeCommandArgs(String args)
@@ -612,9 +640,28 @@ public class LauncherActivity extends Activity
 			}
 		}
 
+		if (mExtractThread != null && mExtractThread.isAlive())
+		{
+			try
+			{
+				mExtractThread.join();
+			}
+			catch (InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+			}
+		}
+		extractAssetsSync();
+
+		boolean firstTime = mPref.getBoolean("firsttime", true);
+
 		// Save preferences
 		SharedPreferences.Editor editor = mPref.edit();
 		editor.putString("basedir", chosenPath);
+		if (firstTime)
+		{
+			editor.putBoolean("firsttime", false);
+		}
 		editor.putString("argv", argv);
 		editor.remove("zbots");
 		editor.putBoolean("yapbs", checkBoxYaPB.isChecked());
@@ -627,14 +674,20 @@ public class LauncherActivity extends Activity
 		editor.putInt("resolution_height", getCustomEngineHeight());
 		editor.putBoolean("usevolume", checkBoxVolume.isChecked());
 		editor.putInt("pixelformat", spinnerPixelFormat.getSelectedItemPosition());
-		editor.apply();
+		editor.commit();
+
+		String launchArgv = argv;
+		if (firstTime)
+		{
+			launchArgv = launchArgv.isEmpty() ? "-firsttime umu" : (launchArgv + " -firsttime umu");
+		}
 
 		// Launch XashActivity
 		Intent intent = new Intent(this, XashActivity.class);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.putExtra("basedir", chosenPath);
 		intent.putExtra("gamedir", "cstrike");
-		intent.putExtra("argv", argv);
+		intent.putExtra("argv", launchArgv);
 		File pakFile = new File(getFilesDir(), "extras.pak");
 		if (pakFile.exists()) 
 		{

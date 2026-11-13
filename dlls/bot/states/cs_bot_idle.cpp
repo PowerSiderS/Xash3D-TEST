@@ -105,13 +105,13 @@ void IdleState::OnUpdate(CCSBot *me)
 							const Vector *spot = FindRandomHidingSpot(me, place, me->IsSniper());
 							if (spot != NULL)
 							{
-								me->Hide(spot);
+								me->Hide(spot, -1.0f, true);
 								return;
 							}
 						}
 
 						// hide nearby
-						me->Hide(TheNavAreaGrid.GetNearestNavArea(&zone->m_center));
+						me->Hide(TheNavAreaGrid.GetNearestNavArea(&zone->m_center), -1.0f, 750.0f, true);
 						return;
 					}
 					else
@@ -185,14 +185,14 @@ void IdleState::OnUpdate(CCSBot *me)
 						return;
 					}
 
-					// if bomb has been planted, and we hear it, move to a hiding spot near the bomb and guard it
-					if (!me->IsRogue() && me->GetGameState()->IsBombPlanted() && me->GetGameState()->GetBombPosition() != NULL)
+					// if bomb has been planted, move to a hiding spot near the bomb and guard it
+					if (me->GetGameState()->IsBombPlanted() && me->GetGameState()->GetBombPosition() != NULL)
 					{
 						const Vector *bombPos = me->GetGameState()->GetBombPosition();
 						if (bombPos != NULL)
 						{
 							me->SetTask(CCSBot::GUARD_TICKING_BOMB);
-							me->Hide(TheNavAreaGrid.GetNavArea(bombPos));
+							me->Hide(TheNavAreaGrid.GetNearestNavArea(bombPos), -1.0f, 750.0f, true);
 							return;
 						}
 					}

@@ -8267,7 +8267,10 @@ void CBasePlayer::AddAutoBuyData(const char *str)
 	if (len < MAX_AUTOBUY_LENGTH - 1)
 	{
 		if (len > 0)
-			m_autoBuyString[ len ] = ' ';
+		{
+			m_autoBuyString[len++] = ' ';
+			m_autoBuyString[len] = '\0';
+		}
 
 		Q_strncat(m_autoBuyString, str, MAX_AUTOBUY_LENGTH - len - 1);
 	}
@@ -8480,13 +8483,17 @@ const char *CBasePlayer::PickPrimaryCareerTaskWeapon()
 	for (int i = 0; i < taskNum; ++i)
 	{
 		CCareerTask *pTask = taskVector[i];
+		const char *weaponName = IsPrimaryWeaponId(pTask->GetWeaponId())
+			? WeaponIDToAlias(pTask->GetWeaponId())
+			: GetBuyStringForWeaponClass(pTask->GetWeaponClassId());
 
-		if (IsPrimaryWeaponId(pTask->GetWeaponId()))
-			Q_strncat(buf, WeaponIDToAlias(pTask->GetWeaponId()), sizeof(buf));
-		else
-			Q_strncat(buf, GetBuyStringForWeaponClass(pTask->GetWeaponClassId()), sizeof(buf));
+		int curLen = Q_strlen(buf);
+		if (curLen < (int)sizeof(buf) - 1)
+			Q_strncat(buf, weaponName, sizeof(buf) - curLen - 1);
 
-		Q_strncat(buf, " ", sizeof(buf));
+		curLen = Q_strlen(buf);
+		if (curLen < (int)sizeof(buf) - 1)
+			Q_strncat(buf, " ", sizeof(buf) - curLen - 1);
 	}
 
 	return buf;
@@ -8564,13 +8571,17 @@ const char *CBasePlayer::PickSecondaryCareerTaskWeapon()
 	for (int i = 0; i < taskNum; ++i)
 	{
 		CCareerTask *pTask = taskVector[i];
+		const char *weaponName = IsSecondaryWeaponId(pTask->GetWeaponId())
+			? WeaponIDToAlias(pTask->GetWeaponId())
+			: GetBuyStringForWeaponClass(pTask->GetWeaponClassId());
 
-		if (IsSecondaryWeaponId(pTask->GetWeaponId()))
-			Q_strncat(buf, WeaponIDToAlias(pTask->GetWeaponId()), sizeof(buf));
-		else
-			Q_strncat(buf, GetBuyStringForWeaponClass(pTask->GetWeaponClassId()), sizeof(buf));
+		int curLen = Q_strlen(buf);
+		if (curLen < (int)sizeof(buf) - 1)
+			Q_strncat(buf, weaponName, sizeof(buf) - curLen - 1);
 
-		Q_strncat(buf, " ", sizeof(buf));
+		curLen = Q_strlen(buf);
+		if (curLen < (int)sizeof(buf) - 1)
+			Q_strncat(buf, " ", sizeof(buf) - curLen - 1);
 	}
 
 	return buf;
@@ -8646,11 +8657,13 @@ void CBasePlayer::PrioritizeAutoBuyString(char *autobuyString, const char *prior
 		int i = 0;
 
 		// get the next token from the priority string.
-		while (*priorityChar != '\0' && *priorityChar != ' ')
+		while (*priorityChar != '\0' && *priorityChar != ' ' && i < (int)sizeof(priorityToken) - 1)
 		{
 			priorityToken[i++] = *priorityChar;
 			++priorityChar;
 		}
+		while (*priorityChar != '\0' && *priorityChar != ' ')
+			++priorityChar;
 
 		priorityToken[i] = '\0';
 
@@ -8669,7 +8682,7 @@ void CBasePlayer::PrioritizeAutoBuyString(char *autobuyString, const char *prior
 		char *autoBuyPosition = Q_strstr(autobuyString, priorityToken);
 		if (autoBuyPosition != NULL)
 		{
-			while (*autoBuyPosition != '\0' && *autoBuyPosition != ' ')
+			while (*autoBuyPosition != '\0' && *autoBuyPosition != ' ' && newStringPos < MAX_AUTOBUY_LENGTH - 2)
 			{
 				newString[ newStringPos ] = *autoBuyPosition;
 				*autoBuyPosition = ' ';
@@ -8678,33 +8691,39 @@ void CBasePlayer::PrioritizeAutoBuyString(char *autobuyString, const char *prior
 				++autoBuyPosition;
 			}
 
-			newString[ newStringPos++ ] = ' ';
+			if (newStringPos < MAX_AUTOBUY_LENGTH - 1)
+				newString[ newStringPos++ ] = ' ';
 		}
 	}
 
 	// now just copy anything left in the autobuyString to the new string in the order it's in already.
 	char *autobuyPosition = autobuyString;
-	while (*autobuyPosition != '\0')
+	while (*autobuyPosition != '\0' && newStringPos < MAX_AUTOBUY_LENGTH - 1)
 	{
 		// skip spaces
 		while (*autobuyPosition == ' ')
 			++autobuyPosition;
 
+		if (*autobuyPosition == '\0')
+			break;
+
 		// copy the token over to the new string.
-		while (*autobuyPosition != '\0' && *autobuyPosition != ' ')
+		while (*autobuyPosition != '\0' && *autobuyPosition != ' ' && newStringPos < MAX_AUTOBUY_LENGTH - 2)
 		{
 			newString[ newStringPos++ ] = *autobuyPosition;
 			++autobuyPosition;
 		}
 
 		// add a space at the end.
-		newString[ newStringPos++ ] = ' ';
+		if (newStringPos < MAX_AUTOBUY_LENGTH - 1)
+			newString[ newStringPos++ ] = ' ';
 	}
 
 	// terminate the string.  Trailing spaces shouldn't matter.
 	newString[ newStringPos ] = '\0';
 
-	Q_sprintf(autobuyString, "%s", newString);
+	Q_strncpy(autobuyString, newString, MAX_AUTOBUY_LENGTH - 1);
+	autobuyString[MAX_AUTOBUY_LENGTH - 1] = '\0';
 }
 
 void CBasePlayer::ParseAutoBuyString(const char *string, bool &boughtPrimary, bool &boughtSecondary)
