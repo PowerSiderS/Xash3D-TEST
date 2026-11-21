@@ -92,23 +92,35 @@ CMenuCreateGame::Begin
 void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 {
 	CMenuCreateGame *menu = (CMenuCreateGame*)pSelf->Parent();
+	int rows = menu->mapsListModel.GetRows();
 	int item = menu->mapsList.GetCurrentIndex();
-	if( item < 0 || item > UI_MAXGAMES )
+
+	// row 0 is the "Random map" entry, real maps are 1..rows-1
+	if( item < 0 || item >= rows )
 		return;
 
 	const char *mapName;
-	if( menu->mapsList.GetCurrentIndex() == 0 )
+	if( item == 0 )
 	{
-		int idx = EngFuncs::RandomLong( 1, menu->mapsListModel.GetRows() );
+		if( rows < 2 )
+			return; // nothing but the random entry, no maps to pick from
+
+		// RandomLong() is inclusive on both ends, so the upper bound has to be
+		// the last real map. GetRows() is one past the end of the list, which
+		// gave us an empty name and made the IsMapValid check below bail out.
+		int idx = EngFuncs::RandomLong( 1, rows - 1 );
 		mapName = menu->mapsListModel.mapName[idx];
 	}
 	else
 	{
-		mapName = menu->mapsListModel.mapName[menu->mapsList.GetCurrentIndex()];
+		mapName = menu->mapsListModel.mapName[item];
 	}
 
 	if( !EngFuncs::IsMapValid( mapName ))
-		return;	// bad map
+	{
+		Con_Printf( "CreateGame: can't start, bad map \"%s\"\n", mapName );
+		return;
+	}
 
 	if( EngFuncs::GetCvarFloat( "host_serverstate" ) )
 	{
@@ -202,7 +214,9 @@ void CMenuMapListModel::Update( void )
 		numMaps++;
 	}
 
-	if( !( numMaps - 1) ) uiCreateGame.done->SetGrayed( true );
+	// grey out OK while there is no real map to start, but don't leave it
+	// stuck greyed if maps show up on a later refresh
+	uiCreateGame.done->SetGrayed( numMaps < 2 );
 	m_iNumItems = numMaps;
 	EngFuncs::COM_FreeFile( afile );
 	uiStatic.needMapListUpdate = false;
