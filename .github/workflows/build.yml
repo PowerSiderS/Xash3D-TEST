@@ -1,4 +1,4 @@
-name: Build CS16Client (PC & Android Release)
+name: Build CS16Client (PC & Android)
 
 on:
   push:
@@ -9,8 +9,12 @@ on:
 
 jobs:
   build-android:
-    name: Build Android (Release APK)
+    name: Build Android (${{ matrix.type }} APK)
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ Release, Debug ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,20 +67,24 @@ jobs:
       - name: Make Gradle Wrapper Executable
         run: chmod +x Android/gradlew
 
-      - name: Build Android Release APK with Gradle
+      - name: Build Android ${{ matrix.type }} APK with Gradle
         run: |
           cd Android
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assemble${{ matrix.type }} --stacktrace
 
-      - name: Upload Android Release APK
+      - name: Upload Android ${{ matrix.type }} APK
         uses: actions/upload-artifact@v4
         with:
-          name: CS16Client-Android-Release-APK
-          path: Android/app/build/outputs/apk/release/*.apk
+          name: CS16Client-Android-${{ matrix.type }}-APK
+          path: Android/app/build/outputs/apk/**/*.apk
 
   build-windows:
-    name: Build PC (Windows Release x86)
+    name: Build PC (Windows ${{ matrix.type }} x86)
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ Release, Debug ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -90,11 +98,11 @@ jobs:
             -DXASH_STATIC=OFF `
             -DXASH_DLL_LOADER=OFF `
             -DXASH_SDL=ON `
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_BUILD_TYPE=${{ matrix.type }}
 
-      - name: Build with MSVC (Release)
+      - name: Build with MSVC (${{ matrix.type }})
         run: |
-          cmake --build build --config Release --parallel
+          cmake --build build --config ${{ matrix.type }} --parallel
 
       - name: Package Windows Artifacts
         shell: pwsh
@@ -103,7 +111,7 @@ jobs:
           if (Test-Path "SDL2\lib\x86\SDL2.dll") {
             Copy-Item "SDL2\lib\x86\SDL2.dll" "dist-windows\" -Force
           }
-          Get-ChildItem -Path "build" -Recurse -Include "*.dll","*.exe" | ForEach-Object {
+          Get-ChildItem -Path "build" -Recurse -Include "*.dll","*.exe","*.pdb" | ForEach-Object {
             if ($_.FullName -notmatch "CMakeFiles") {
               Copy-Item $_.FullName "dist-windows\" -Force
             }
@@ -113,5 +121,5 @@ jobs:
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CS16Client-PC-Windows-Release-x86
+          name: CS16Client-PC-Windows-${{ matrix.type }}-x86
           path: dist-windows/
