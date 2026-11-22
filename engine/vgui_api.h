@@ -211,5 +211,11 @@ typedef struct  vguiapi_s
 	void	(*Mouse)(enum VGUI_MouseAction action, int code );
 	void	(*Key)(enum VGUI_KeyAction action,enum VGUI_KeyCode code );
 	void	(*MouseMove)( int x, int y );
+	// services for the VGUI2 support library (freevgui): TextInput is
+	// filled by the library itself, the rest are provided by the engine
+	void	(*TextInput)( const char *text );
+	void	(*SetPaintOffset)( int x, int y );
+	void	*(*LoadFile)( const char *path, int *length );	// NULL on failure
+	void	(*FreeFile)( void *buffer );
 } vguiapi_t;
 #endif // VGUI_API_H

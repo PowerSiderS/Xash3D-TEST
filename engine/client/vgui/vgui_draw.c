@@ -172,6 +172,66 @@ int GAME_EXPORT VGUI_UtfProcessChar( int in )
 		return in;
 }
 
+/*
+==================
+VGUI_SetPaintOffset
+
+freevgui shifts its drawing by this offset so the game's own 2D output
+lines up with panel coordinates (GoldSrc installs a matrix here). The
+renderer here has no 2D offset hook yet, so just remember the value
+until something actually draws VGUI panels.
+==================
+*/
+static int vgui_paint_offset[2];
+
+static void GAME_EXPORT VGUI_SetPaintOffset( int x, int y )
+{
+	vgui_paint_offset[0] = x;
+	vgui_paint_offset[1] = y;
+}
+
+/*
+==================
+VGUI_LoadFile
+
+Game-dir relative loader handed to the VGUI support library, so it can
+read its .res resources under resource/ the way the original GameUI did.
+==================
+*/
+static void *VGUI_LoadFile( const char *path, int *length )
+{
+	fs_offset_t size = 0;
+	byte *buf;
+
+	if( !path )
+	{
+		if( length ) *length = 0;
+		return NULL;
+	}
+
+	buf = FS_LoadFile( path, &size, false );
+	if( !buf )
+	{
+		MsgDev( D_INFO, "VGUI_LoadFile: %s not found\n", path );
+		if( length ) *length = 0;
+		return NULL;
+	}
+
+	if( length ) *length = (int)size;
+	return buf;
+}
+
+/*
+==================
+VGUI_FreeFile
+==================
+*/
+static void VGUI_FreeFile( void *buffer )
+{
+	if( buffer )
+		Mem_Free( buffer );
+}
+
 vguiapi_t vgui =
 {
 	false, // Not initialized yet
@@ -204,6 +264,10 @@ vguiapi_t vgui =
 	NULL,
 	NULL,
 	NULL,
+	NULL, // TextInput, filled by the support library itself
+	VGUI_SetPaintOffset,
+	VGUI_LoadFile,
+	VGUI_FreeFile,
 };
 
 qboolean VGui_IsActive( void )
@@ -292,6 +356,7 @@ void VGui_Startup( int width, int height )
 				F( &vgui );
 				vgui.initialized = true;
 				VGUI_InitCursors();
+				MsgDev( D_INFO, "vgui_support: loaded %s\n", vguiloader );
 			}
 			else
 				MsgDev( D_ERROR, "Failed to find vgui_support library entry point!\n" );

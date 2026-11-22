@@ -53,7 +53,7 @@ else()
 	option(XASH_MAINUI "Build mainui library" ON)
 endif()
 
-set(XASH_VGUI OFF) # CS16Client uses its own custom UI
+option(XASH_VGUI "Build the VGUI2 support library (freevgui)" ON)
 option(XASH_USE_STB_SPRINTF "Use stb_sprintf implementation for sprintf" ON)
 option(XASH_DOWNLOAD_DEPENDENCIES "Download dependencies automatically" OFF)
 
@@ -80,6 +80,12 @@ endif()
 
 add_subdirectory(dlls)
 add_subdirectory(engine)
+
+# VGUI2 runtime, loaded by the engine as vgui_support
+# (see engine/client/vgui/vgui_draw.c and VGUI_SUPPORT_DLL in common/port.h)
+if(XASH_VGUI AND NOT XASH_DEDICATED)
+	add_subdirectory(freevgui)
+endif()
 
 if(NOT XASH_SINGLE_BINARY AND NOT ANDROID)
 	add_subdirectory(game_launch)
