@@ -848,7 +848,14 @@ void CRotButton::Spawn()
 	m_vecAngle1 = pev->angles;
 	m_vecAngle2 = pev->angles + pev->movedir * m_flMoveDistance;
 
-	assert(("rotating button start/end positions are equal", m_vecAngle1 != m_vecAngle2));
+	// same deal as func_door_rotating: a rot button with no "distance" key can
+	// not move, give it a default swing instead of aborting the game over it
+	if( m_vecAngle1 == m_vecAngle2 )
+	{
+		ALERT( at_console, "func_rot_button %s has no rotation distance, using 90 degrees\n", STRING( pev->classname ));
+		m_flMoveDistance = 90.0f;
+		m_vecAngle2 = pev->angles + pev->movedir * m_flMoveDistance;
+	}
 
 	m_fStayPushed = (m_flWait == -1 ? TRUE : FALSE);
 	m_fRotating = TRUE;

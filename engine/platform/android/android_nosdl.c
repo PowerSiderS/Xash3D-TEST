@@ -25,6 +25,7 @@ GNU General Public License for more details.
 #include <jni.h>
 #include <EGL/egl.h> // nanogl
 #include <errno.h>
+#include <unistd.h> // usleep
 convar_t *android_sleep;
 
 #ifndef JAVA_EXPORT
@@ -530,6 +531,7 @@ DECLARE_JNI_INTERFACE_VOID( void, nativeQuit )
 
 DECLARE_JNI_INTERFACE( void, nativeSetPause, jint pause )
 {
+	int i;
 	event_t *event = Android_AllocEvent();
 	event->type = event_set_pause;
 	event->arg = pause;
@@ -540,7 +542,19 @@ DECLARE_JNI_INTERFACE( void, nativeSetPause, jint pause )
 	if( android_sleep && android_sleep->value )
 	{
 		if( pause )
-			pthread_mutex_lock( &events.framemutex );
+		{
+			// this runs on the android UI thread. when the engine is stuck (or
+			// already gone after a crash) it never releases the frame mutex, so
+			// wait for it with a cap instead of blocking the UI thread forever
+			// and getting the app killed with "isn't responding"
+			for( i = 0; i < 250; i++ )
+			{
+				if( pthread_mutex_trylock( &events.framemutex ) == 0 )
+					return;
+				usleep( 10000 );
+			}
+			__android_log_print( ANDROID_LOG_ERROR, "Xash", "nativeSetPause: engine is not releasing the frame mutex, giving up" );
+		}
 		else
 			pthread_mutex_unlock( &events.framemutex );
 	}

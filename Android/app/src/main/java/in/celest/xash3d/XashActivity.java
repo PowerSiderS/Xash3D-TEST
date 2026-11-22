@@ -475,42 +475,91 @@ public class XashActivity extends Activity {
 	}
 
 	protected final String[] messageboxData = new String[2];
+	private boolean messageBoxDone = false;
+
+	// Shown from the engine thread. This used to wait forever for the OK button,
+	// so whenever the dialog could not be put up (or was never dismissed) the
+	// engine hung for good and the UI thread followed it into an ANR. Always
+	// log it, show it when we can, and never wait longer than a few seconds.
 	public static void messageBox( String title, String text )
 	{
-		mSingleton.messageboxData[0] = title;
-		mSingleton.messageboxData[1] = text;
-		//mSingleton.runOnUiThread( new Runnable()
-		mSingleton.runOnUiThread( new Runnable()
+		Log.e( TAG, "messageBox: " + title + ": " + text );
+
+		if( mSingleton == null )
+			return;
+
+		synchronized( mSingleton.messageboxData )
 		{
-			@Override
-			public void run()
+			mSingleton.messageboxData[0] = title;
+			mSingleton.messageboxData[1] = text;
+			mSingleton.messageBoxDone = false;
+		}
+
+		try
+		{
+			mSingleton.runOnUiThread( new Runnable()
 			{
-				new AlertDialog.Builder( mSingleton )
-					.setTitle( mSingleton.messageboxData[0] )
-					.setMessage( mSingleton.messageboxData[1] )
-					.setPositiveButton( "Ok", new DialogInterface.OnClickListener()
-						{
-							public void onClick( DialogInterface dialog, int whichButton )
-							{
-								synchronized( mSingleton.messageboxData )
+				@Override
+				public void run()
+				{
+					try
+					{
+						new AlertDialog.Builder( mSingleton )
+							.setTitle( mSingleton.messageboxData[0] )
+							.setMessage( mSingleton.messageboxData[1] )
+							.setPositiveButton( "Ok", new DialogInterface.OnClickListener()
 								{
-									mSingleton.messageboxData.notify();
-								}
-							}
-						})
-					.setCancelable( false )
-					.show();
-			}
-		});
-		synchronized( mSingleton.messageboxData ) 
+									public void onClick( DialogInterface dialog, int whichButton )
+									{
+										synchronized( mSingleton.messageboxData )
+										{
+											mSingleton.messageBoxDone = true;
+											mSingleton.messageboxData.notifyAll();
+										}
+									}
+								})
+							.setCancelable( false )
+							.show();
+					}
+					catch( Throwable t )
+					{
+						// no window to put the dialog on (activity gone, bad
+						// token, ...). wake the engine up anyway
+						Log.e( TAG, "messageBox: can't show dialog: " + t );
+						synchronized( mSingleton.messageboxData )
+						{
+							mSingleton.messageBoxDone = true;
+							mSingleton.messageboxData.notifyAll();
+						}
+					}
+				}
+			});
+		}
+		catch( Throwable t )
 		{
-			try 
+			Log.e( TAG, "messageBox: runOnUiThread failed: " + t );
+			return;
+		}
+
+		synchronized( mSingleton.messageboxData )
+		{
+			long deadline = System.currentTimeMillis() + 3000;
+			while( !mSingleton.messageBoxDone )
 			{
-				mSingleton.messageboxData.wait();
-			} 
-			catch( InterruptedException ex )
-			{
-				ex.printStackTrace();
+				long left = deadline - System.currentTimeMillis();
+				if( left <= 0 )
+				{
+					Log.e( TAG, "messageBox: timed out, engine continues" );
+					break;
+				}
+				try
+				{
+					mSingleton.messageboxData.wait( left );
+				}
+				catch( InterruptedException ex )
+				{
+					break;
+				}
 			}
 		}
 	}

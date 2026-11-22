@@ -895,7 +895,16 @@ void CRotDoor::Spawn ()
 	m_vecAngle1 = pev->angles;
 	m_vecAngle2 = pev->angles + pev->movedir * m_flMoveDistance;
 
-	assert (("rotating door start/end positions are equal", m_vecAngle1 != m_vecAngle2));
+	// a func_door_rotating with no "distance" key has nothing to swing to, and
+	// that used to trip an assert which aborted the whole game. a map entity
+	// that is wrong is not a reason to take the game down, just give it a
+	// default rotation and keep going
+	if( m_vecAngle1 == m_vecAngle2 )
+	{
+		ALERT( at_console, "func_door_rotating %s has no rotation distance, using 90 degrees\n", STRING( pev->classname ));
+		m_flMoveDistance = 90.0f;
+		m_vecAngle2 = pev->angles + pev->movedir * m_flMoveDistance;
+	}
 
 	if (pev->spawnflags & SF_DOOR_PASSABLE)
 		pev->solid = SOLID_NOT;
