@@ -243,30 +243,25 @@ void SV_Map_f( void )
 
 	flags = SV_MapIsValid( mapname, spawn_entity, NULL );
 
+	// NOTE: don't Sys_Warn() here. It pops a modal message box on the main
+	// thread, which sits behind the fullscreen window and blocks forever, so a
+	// map that fails validation just looks like a crash. Log it and bail out.
+
 	if( flags & MAP_INVALID_VERSION )
 	{
-		if( CL_IsInMenu() )
-			Sys_Warn( "SV_NewMap: map %s is invalid or not supported\n", mapname );
-		else
-			Msg( "SV_NewMap: map %s is invalid or not supported\n", mapname );
+		Msg( "SV_NewMap: map %s is invalid or not supported\n", mapname );
 		return;
 	}
 	
 	if(!( flags & MAP_IS_EXIST ))
 	{
-		if( CL_IsInMenu() )
-			Sys_Warn( "SV_NewMap: map %s doesn't exist\n", mapname );
-		else
-			Msg( "SV_NewMap: map %s doesn't exist\n", mapname );
+		Msg( "SV_NewMap: map %s doesn't exist\n", mapname );
 		return;
 	}
 
 	if(!( flags & MAP_HAS_SPAWNPOINT ))
 	{
-		if( CL_IsInMenu() )
-			Sys_Warn( "SV_NewMap: map %s doesn't have a valid spawnpoint\n", mapname );
-		else
-			Msg( "SV_NewMap: map %s doesn't have a valid spawnpoint\n", mapname );
+		Msg( "SV_NewMap: map %s doesn't have a valid spawnpoint\n", mapname );
 		return;
 	}
 

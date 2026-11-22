@@ -116,12 +116,6 @@ void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 		mapName = menu->mapsListModel.mapName[item];
 	}
 
-	if( !EngFuncs::IsMapValid( mapName ))
-	{
-		Con_Printf( "CreateGame: can't start, bad map \"%s\"\n", mapName );
-		return;
-	}
-
 	if( EngFuncs::GetCvarFloat( "host_serverstate" ) )
 	{
 		if(	EngFuncs::GetCvarFloat( "maxplayers" ) == 1.0f )
@@ -137,6 +131,16 @@ void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 	menu->hostName.WriteCvar();
 	menu->hltv.WriteCvar();
 	menu->maxClients.WriteCvar();
+
+	// IsMapValid() picks the spawn entity from maxplayers, so this has to run
+	// after the values above are written. Doing it earlier saw maxplayers == 1
+	// and looked for info_player_start, while every normal mp map only has
+	// info_player_deathmatch.
+	if( !EngFuncs::IsMapValid( mapName ))
+	{
+		Con_Printf( "CreateGame: can't start, bad map \"%s\"\n", mapName );
+		return;
+	}
 
 	EngFuncs::PlayBackgroundTrack( NULL, NULL );
 
