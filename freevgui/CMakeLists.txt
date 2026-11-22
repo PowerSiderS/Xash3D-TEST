@@ -70,6 +70,13 @@ if(FREEVGUI_XASH_SUPPORT)
 		message(FATAL_ERROR "freevgui: cannot locate engine/vgui_api.h")
 	endif()
 
+	# vgui_api.h pulls in xash3d_types.h from common/
+	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../common/xash3d_types.h")
+		target_include_directories(vgui PRIVATE ../common)
+	elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../common/xash3d_types.h")
+		target_include_directories(vgui PRIVATE ../../common)
+	endif()
+
 	# rename the entry point to what the engine looks for in the client library
 	if(USE_STATIC_FREEVGUI)
 		target_compile_definitions(vgui PRIVATE INTERNAL_VGUI_SUPPORT)
