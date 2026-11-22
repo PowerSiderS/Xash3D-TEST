@@ -84,6 +84,16 @@ private:
 
 static CMenuCreateGame	uiCreateGame;
 
+// OK while a game is already running: ask for confirmation before dropping it.
+// Same thing MakeOpenEvent() did, only it now says so in the log, because a
+// click that only opens a dialog used to look exactly like a click that did
+// nothing at all
+static void CreateGame_OpenExitPrompt( CMenuBaseItem *pSelf, void *pExtra )
+{
+	Con_Printf( "CreateGame: OK clicked in game, asking to leave the current game first\n" );
+	((CMenuYesNoMessageBox *)pExtra)->ToggleVisibility();
+}
+
 /*
 =================
 CMenuCreateGame::Begin
@@ -95,15 +105,26 @@ void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 	int rows = menu->mapsListModel.GetRows();
 	int item = menu->mapsList.GetCurrentIndex();
 
+	// every exit out of this function is written to the log now. clicking OK
+	// used to be able to do nothing at all without leaving a single line
+	// behind, so there was no way to tell which check gave up
+	Con_Printf( "CreateGame: start requested, %d map rows, selected item %d\n", rows, item );
+
 	// row 0 is the "Random map" entry, real maps are 1..rows-1
 	if( item < 0 || item >= rows )
+	{
+		Con_Printf( "CreateGame: can't start, selection is out of range (rows %d, item %d)\n", rows, item );
 		return;
+	}
 
 	const char *mapName;
 	if( item == 0 )
 	{
 		if( rows < 2 )
+		{
+			Con_Printf( "CreateGame: can't start, the list only has the random entry\n" );
 			return; // nothing but the random entry, no maps to pick from
+		}
 
 		// RandomLong() is inclusive on both ends, so the upper bound has to be
 		// the last real map. GetRows() is one past the end of the list, which
@@ -115,6 +136,8 @@ void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 	{
 		mapName = menu->mapsListModel.mapName[item];
 	}
+
+	Con_Printf( "CreateGame: picked map \"%s\"\n", mapName );
 
 	if( EngFuncs::GetCvarFloat( "host_serverstate" ) )
 	{
@@ -152,6 +175,8 @@ void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 		char cmd[128];
 		sprintf( cmd, "#%s", gMenu.m_gameinfo.gamefolder );
 
+		Con_Printf( "CreateGame: starting dedicated server \"%s\"\n", cmd );
+
 		// NOTE: dedicated server will be executed "defaultmap"
 		// from engine after restarting
 		EngFuncs::ChangeInstance( cmd, "Starting dedicated server...\n" );
@@ -163,6 +188,7 @@ void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 		char cmd[1024], cmd2[256];
 		sprintf( cmd, "exec %s\n", EngFuncs::GetCvarString( "lservercfgfile" ) );
 	
+		Con_Printf( "CreateGame: exec listen server config\n" );
 		EngFuncs::ClientCmd( TRUE, cmd );
 
 		// dirty listenserver config form old xash may rewrite maxplayers
@@ -172,6 +198,8 @@ void CMenuCreateGame::Begin( CMenuBaseItem *pSelf, void *pExtra )
 
 		// hack: wait three frames allowing server to completely shutdown, reapply maxplayers and start new map
 		sprintf( cmd, "endgame;menu_connectionprogress localserver;wait;wait;wait;maxplayers %i;latch;map %s\n", atoi( menu->maxClients.GetBuffer() ), cmd2 );
+
+		Con_Printf( "CreateGame: running \"%s\"\n", cmd );
 		EngFuncs::ClientCmd( FALSE, cmd );
 
 	}
@@ -194,6 +222,7 @@ void CMenuMapListModel::Update( void )
 		uiCreateGame.done->SetGrayed( true );
 		m_iNumItems = 0;
 		Con_Printf( "Cmd_GetMapsList: can't open maps.lst\n" );
+		Con_Printf( "CreateGame: map list unavailable, OK button disabled\n" );
 		return;
 	}
 
@@ -222,6 +251,7 @@ void CMenuMapListModel::Update( void )
 	// stuck greyed if maps show up on a later refresh
 	uiCreateGame.done->SetGrayed( numMaps < 2 );
 	m_iNumItems = numMaps;
+	Con_Printf( "CreateGame: %d entries in map list, OK button %s\n", numMaps, numMaps < 2 ? "disabled" : "enabled" );
 	EngFuncs::COM_FreeFile( afile );
 	uiStatic.needMapListUpdate = false;
 }
@@ -251,7 +281,7 @@ void CMenuCreateGame::_Init( void )
 	advOpt->SetGrayed( !UI_AdvServerOptions_IsAvailable() );
 
 	done = AddButton( L( "GameUI_OK" ), L( "Start the multiplayer game" ), PC_OK, Begin );
-	done->onReleasedClActive = msgBox.MakeOpenEvent();
+	done->onReleasedClActive = CEventCallback( CreateGame_OpenExitPrompt, &msgBox );
 
 	mapsList.SetCharSize( QM_SMALLFONT );
 	mapsList.SetupColumn( 0, L( "GameUI_Map" ), 0.5f );
