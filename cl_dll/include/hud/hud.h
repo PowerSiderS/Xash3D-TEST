@@ -28,6 +28,13 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
+
+// same policy as the game dll: a failed assert here is a data oddity, say what
+// failed and keep going. release builds skip these anyway through NDEBUG.
+#undef assert
+#define assert( exp ) \
+	( (exp) ? (void)0 : ( fprintf( stderr, "assert failed: %s:%d: %s\n", __FILE__, __LINE__, #exp ), (void)0 ) )
 
 #include "wrect.h"
 #include "cl_dll.h"
